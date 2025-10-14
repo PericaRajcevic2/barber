@@ -176,7 +176,7 @@ const handleSubmit = async (e) => {
   return (
     <div className="App">
       <header className="app-header">
-        <h1>💈 Barber Shop - Online Rezervacija</h1>
+        <h1>💈 Frizerski salon Jimmy 💈</h1>
         <p>Rezervirajte svoj termin jednostavno i brzo</p>
         <button 
           onClick={() => setShowAdminLogin(true)} 

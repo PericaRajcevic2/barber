@@ -1,3 +1,4 @@
+/* ORIGINAL CSS (user provided) */
 .App {
   max-width: 1200px;
   margin: 0 auto;
@@ -6,6 +7,10 @@
 }
 
 .app-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
   margin-bottom: 40px;
   padding: 30px;
@@ -333,3 +338,598 @@
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
+
+/* END ORIGINAL CSS */
+
+
+/* -----------------------------
+  DARK / ORANGE THEME — append to end of your CSS
+  Mobile-first overrides (doesn't remove your original rules,
+  samo nadjačava gdje treba)
+   ----------------------------- */
+:root{
+  --bg: #0b0b0c;
+  --panel: #121217;
+  --panel-2: #19191d;
+  --accent: #ff9f1c; /* glavna narančasta */
+  --accent-2: #f39c12;
+  --muted: rgba(255,255,255,0.65);
+  --muted-2: rgba(255,255,255,0.35);
+  --card-border: rgba(255,255,255,0.04);
+  --glass-shadow: 0 12px 30px rgba(2,6,23,0.7);
+}
+
+/* page background & base text */
+body {
+  background: var(--bg);
+  color: white;
+}
+
+/* Make the app look like a phone card on smaller screens */
+@media (max-width: 980px) {
+  .App {
+    max-width: 420px;          /* telefon širine */
+    margin: 28px auto;
+    padding: 18px;
+    border-radius: 36px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow: 0 30px 80px rgba(2,6,23,0.8);
+    border: 1px solid rgba(255,255,255,0.02);
+    min-height: auto;
+  }
+}
+
+/* Desktop: keep original layout but soften to dark theme */
+@media (min-width: 981px) {
+  .App {
+    background: transparent; /* zadrži širinu, ali nema bijeli card */
+  }
+}
+
+/* Header: dark + orange name accent (like mockup) */
+.app-header {
+  background: transparent !important;
+  color: var(--muted) !important;
+  padding: 22px;
+  text-align: left;
+  box-shadow: none;
+}
+
+.app-header h1 {
+  color: var(--accent) !important;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+/* cards/panels */
+.calendar-section,
+.booking-form {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2)) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--glass-shadow) !important;
+  border: 1px solid var(--card-border) !important;
+  color: #eee;
+}
+
+/* headings inside panels */
+.calendar-section h2,
+.booking-form h2 {
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+/* selected date card */
+.selected-date {
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* inputs / selects - dark style */
+.service-select,
+.form-input,
+.form-textarea {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #eee;
+}
+
+.service-select:focus,
+.form-input:focus,
+.form-textarea:focus {
+  border-color: rgba(255,159,28,0.9);
+  box-shadow: 0 6px 26px rgba(255,159,28,0.06);
+}
+
+/* time slots — dark neutral, accent border, orange selected */
+.time-slot {
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  border: 1px solid rgba(255,159,28,0.12);
+  box-shadow: none;
+  font-weight: 700;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.time-slot:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+  color: white;
+  border-color: rgba(255,159,28,0.3);
+  background: linear-gradient(180deg, rgba(255,159,28,0.06), rgba(0,0,0,0.05));
+}
+
+.time-slot.selected,
+.time-slot:active {
+  background: var(--accent);
+  color: #0b0b0c;
+  border-color: rgba(255,159,28,0.95);
+  box-shadow: 0 8px 30px rgba(255,159,28,0.12);
+  transform: translateY(-4px);
+}
+
+/* submit button — orange pill */
+.submit-btn {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+  color: #0b0b0c !important;
+  border-radius: 999px !important;
+  box-shadow: 0 12px 30px rgba(243,156,18,0.15);
+  border: none !important;
+  text-transform: none;
+  letter-spacing: 0.6px;
+}
+
+/* disabled submit more subtle on dark */
+.submit-btn.disabled {
+  background: rgba(255,255,255,0.06) !important;
+  color: var(--muted-2) !important;
+}
+
+/* react-calendar: use orange accents for active/selected days */
+.react-calendar {
+  background: transparent;
+  color: #eee;
+}
+
+.react-calendar__tile {
+  background: transparent;
+  color: var(--muted);
+  border-radius: 8px;
+}
+
+.react-calendar__tile--active {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+  color: #0b0b0c !important;
+  box-shadow: 0 8px 22px rgba(249,147,31,0.16);
+}
+
+/* hover on calendar tiles */
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background: rgba(255,159,28,0.06);
+  color: white;
+}
+
+/* small UI flourishes */
+.section-label { color: var(--muted) !important; }
+.no-slots { background: rgba(255,200,100,0.06); color: #ffd89a; border-color: rgba(255,200,100,0.12); }
+.loading-spinner-small { border-top-color: var(--accent) !important; }
+
+/* reduce bright shadows on desktop cards */
+@media (min-width: 981px){
+  .calendar-section, .booking-form {
+    border-radius: 14px;
+  }
+}
+
+/* small tweaks for grid of slots on tiny screens */
+@media (max-width: 480px) {
+  .slots-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px; }
+  .time-slot { padding: 10px 6px; font-size: 13px; }
+}
+
+/* keep existing .slots-grid duplicate rules consistent */
+.slots-grid { gap: 10px; }
+
+/* Accessibility: high-contrast focus outlines */
+a:focus, .time-slot:focus, .submit-btn:focus, .form-input:focus {
+  outline: 3px solid rgba(255,159,28,0.14);
+  outline-offset: 3px;
+}
+
+/* ======= STRONG THEME FIXES — PASTE AT END OF YOUR CSS ======= */
+:root{
+  --bg:#060607;
+  --panel:#0f0f11;
+  --panel-2:#141416;
+  --accent:#ff9f1c;
+  --accent-2:#f39c12;
+  --muted:rgba(255,255,255,0.85);
+  --muted-2:rgba(255,255,255,0.55);
+}
+
+/* Ensure page overall dark background (higher specificity) */
+html, body {
+  background: var(--bg) !important;
+  color: var(--muted);
+}
+
+/* Make the whole app look like a centered phone card on narrow screens */
+@media (max-width: 1100px) {
+  .App {
+    max-width: 420px !important;
+    margin: 20px auto !important;
+    padding: 18px !important;
+    border-radius: 34px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)) !important;
+    box-shadow: 0 30px 80px rgba(2,6,23,0.8) !important;
+    border: 1px solid rgba(255,255,255,0.03) !important;
+  }
+
+  /* Single column layout on mobile */
+  .booking-container {
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+  }
+}
+
+/* Desktop: keep content centered but dark */
+@media (min-width: 1101px) {
+  .App {
+    max-width: 1100px !important;
+    margin: 28px auto !important;
+    padding: 26px !important;
+    background: transparent !important;
+    border-radius: 10px !important;
+  }
+
+  /* desktop columns: booking-form flexible, calendar narrow */
+  .booking-container {
+    display: grid !important;
+    grid-template-columns: 1fr 360px !important;
+    gap: 28px !important;
+    align-items: start;
+  }
+}
+
+/* Header: force dark look and orange accent */
+.App .app-header,
+.app-header {
+  background: transparent !important;
+  color: var(--muted) !important;
+  padding: 18px 6px !important;
+  text-align: left !important;
+  box-shadow: none !important;
+}
+
+.app-header h1 {
+  color: var(--accent) !important;
+  font-weight: 800 !important;
+  font-size: 1.5rem !important;
+  margin: 0 !important;
+  display: inline-block;
+  vertical-align: middle;
+  letter-spacing: 0.4px;
+}
+
+/* small subtitle under header (if present) */
+.app-header p { color: var(--muted-2) !important; margin-top: 6px !important; font-size: 0.95rem !important; }
+
+/* Panels: calendar and booking form */
+.calendar-section,
+.booking-form {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2)) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 18px 40px rgba(2,6,23,0.75) !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+  padding: 18px !important;
+  color: var(--muted) !important;
+}
+
+/* Make calendar take reasonable width and center it */
+.calendar-section .react-calendar,
+.react-calendar {
+  width: 100% !important;
+  max-width: 360px !important;
+  margin: 6px auto 0 auto !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+  border: none !important;
+}
+
+/* Make react calendar tiles readable on dark */
+.react-calendar__tile {
+  background: transparent !important;
+  color: var(--muted) !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+  padding: 6px !important;
+  min-height: 36px !important;
+  box-shadow: none !important;
+}
+
+/* Today's/active tile accent */
+.react-calendar__tile--active,
+.react-calendar__tile--now {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+  color: #0b0b0b !important;
+  border: 1px solid rgba(255,159,28,0.95) !important;
+  box-shadow: 0 8px 22px rgba(249,147,31,0.14) !important;
+}
+
+/* Hover effect for tiles */
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background: rgba(255,159,28,0.06) !important;
+  color: #fff !important;
+}
+
+/* If calendar nav arrows or header are hidden or small, ensure visibility */
+.react-calendar__navigation button {
+  background: transparent !important;
+  color: var(--muted) !important;
+  border: none !important;
+  padding: 6px 8px !important;
+}
+
+/* Booking form layout: full width inputs on mobile */
+.booking-form .form-grid,
+.form-grid {
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+@media (min-width: 768px) {
+  .booking-form .form-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* Inputs, selects, textarea: dark, full width, clear contrast */
+.service-select,
+.form-input,
+.form-textarea,
+select {
+  width: 100% !important;
+  background: rgba(255,255,255,0.02) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  color: var(--muted) !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+/* focus */
+.service-select:focus,
+.form-input:focus,
+.form-textarea:focus {
+  border-color: rgba(255,159,28,0.95) !important;
+  box-shadow: 0 10px 30px rgba(255,159,28,0.06) !important;
+  outline: none !important;
+}
+
+/* Time slots grid: make them evenly spaced and visible */
+.slots-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.time-slot {
+  background: rgba(255,255,255,0.02) !important;
+  color: var(--muted) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  padding: 10px 8px !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  cursor: pointer !important;
+}
+
+/* selected and hover */
+.time-slot:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6) !important;
+  background: linear-gradient(180deg, rgba(255,159,28,0.06), rgba(0,0,0,0.03)) !important;
+  color: #fff !important;
+  border-color: rgba(255,159,28,0.25) !important;
+}
+
+.time-slot.selected,
+.time-slot:active {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+  color: #0b0b0b !important;
+  border-color: rgba(255,159,28,0.95) !important;
+  box-shadow: 0 8px 30px rgba(255,159,28,0.12) !important;
+  transform: translateY(-4px) !important;
+}
+
+/* Submit button: visible orange pill and full width */
+.submit-btn {
+  display: block !important;
+  width: 100% !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+  color: #0b0b0b !important;
+  padding: 14px 18px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 12px 30px rgba(243,156,18,0.16) !important;
+  border: none !important;
+}
+
+/* Disabled submit */
+.submit-btn.disabled {
+  background: rgba(255,255,255,0.04) !important;
+  color: var(--muted-2) !important;
+  cursor: not-allowed !important;
+}
+
+/* small text, labels and icons */
+.section-label, .booking-form h2, .calendar-section h2 {
+  color: var(--muted) !important;
+  font-weight: 700 !important;
+}
+
+/* remove unexpected white boxes/diamond shapes some calendar themes add */
+.react-calendar__month-view__days__day > abbr,
+.react-calendar__tile > button {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* accessibility: focus outlines */
+.time-slot:focus, .submit-btn:focus, .form-input:focus, .service-select:focus {
+  outline: 3px solid rgba(255,159,28,0.12) !important;
+  outline-offset: 2px !important;
+}
+
+/* final safety: ensure big empty dark areas trimmed */
+.calendar-section, .booking-form {
+  margin: 0 auto !important;
+  max-width: 100% !important;
+}
+
+/* small tweak: reduce huge border radii on desktop big panels */
+@media (min-width: 1101px) {
+  .App { border-radius: 12px !important; }
+  .calendar-section, .booking-form { border-radius: 12px !important; }
+}
+
+/* Povećani razmaci za formu - paste na kraj CSS-a */
+.booking-form {
+  padding-bottom: 28px !important; /* više prostora ispod forme */
+}
+
+/* Razmak između polja (grid) - mobile first */
+.booking-form .form-grid,
+.form-grid {
+  gap: 20px !important; /* veći vertikalni razmak između inputa */
+}
+
+/* Dodatni razmak prije user info / submit area */
+.customer-form {
+  margin-top: 28px !important;
+  padding-top: 4px !important;
+}
+
+/* Osiguraj da pojedina input polja ne imaju neželjene margin-e (grid se brine za razmak) */
+.form-input,
+.form-textarea {
+  margin-bottom: 0 !important;
+}
+
+/* Veći razmak i veća visina submit gumba */
+.submit-btn {
+  margin-top: 18px !important;
+  padding: 14px 20px !important;
+  display: block;
+}
+
+/* Na tablet / desktop povećaj razmake još malo */
+@media (min-width: 768px) {
+  .booking-form .form-grid,
+  .form-grid {
+    gap: 26px !important;
+  }
+  .customer-form {
+    margin-top: 34px !important;
+  }
+  .submit-btn {
+    margin-top: 24px !important;
+    padding: 16px 22px !important;
+  }
+}
+
+/* Ako imaš checkbox/ikonicu pored teksta "Rezerviraj termin", malo podigni line-height */
+.booking-form .submit-row,
+.booking-form .submit-label,
+.submit-btn + .note {
+  line-height: 1.6 !important;
+}
+/* --- Select dropdown options — option text black --- */
+.service-select,
+select.service-select {
+  /* boja koja se prikazuje u samom select polju (odabrana vrijednost) */
+  color: var(--muted) !important;
+  background: rgba(255,255,255,0.02) !important; /* tamna pozadina u našoj temi */
+}
+
+/* boja opcija u dropdown listi (postavi na crnu) */
+.service-select option {
+  color: #000000 !important;      /* tekst opcija - crna */
+  background: #ffffff !important;  /* pozadina opcija (može biti ignorirano u nekim browserima) */
+}
+
+/* dodatna sigurnost za Firefox (ponekad treba) */
+@-moz-document url-prefix() {
+  .service-select { color: var(--muted) !important; }
+  .service-select option { color: #000000 !important; background: #ffffff !important; }
+}
+
+/* === Calendar: past days light red, available days light grey with white border === */
+/* Past/disabled days (commonly have aria-disabled="true" or .react-calendar__tile--disabled) */
+.react-calendar__tile[aria-disabled="true"],
+.react-calendar__tile.react-calendar__tile--disabled {
+  background: rgba(255,99,99,0.12) !important; /* svijetlo crvena pozadina */
+  color: rgba(0,0,0,0.85) !important; /* tamniji tekst za bolji kontrast */
+  border: 1px solid rgba(255,99,99,0.18) !important;
+  box-shadow: none !important;
+}
+
+/* Available days (enabled tiles that are not active/selected) */
+.react-calendar__tile:enabled:not([aria-disabled="true"]):not(.react-calendar__tile--active) {
+  background: rgba(230,230,230,0.85) !important; /* svijetlo siva */
+  color: #000000 !important; /* crna boja teksta */
+  border: 1px solid #ffffff !important; /* bijeli obrub */
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+/* Hover for available days */
+.react-calendar__tile:enabled:not([aria-disabled="true"]):hover {
+  background: rgba(230,230,230,0.95) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 22px rgba(2,6,23,0.06) !important;
+}
+
+/* Keep selected/active tile styling from theme (override only if necessary) */
+.react-calendar__tile--active {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+  color: #0b0b0b !important;
+  border: 1px solid rgba(255,159,28,0.95) !important;
+  box-shadow: 0 8px 22px rgba(249,147,31,0.16) !important;
+}
+
+/* Small tweak: ensure month navigation buttons remain readable */
+.react-calendar__navigation button {
+  color: var(--muted) !important;
+}
+
+/* Note: some browsers (iOS/macOS) render native select/calendar UI differently; if you
+   still see issues, consider using tileDisabled prop in react-calendar to explicitly set
+   disabled/past days, or inform me and I can provide a JS snippet to add a custom class
+   (e.g. .available-day) to tiles so styling is 100% reliable. */
+
+/* === Calendar: slightly increase spacing between day boxes for a cleaner look === */
+.react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 8px !important; /* razmak između redova i stupaca */
+}
+
+.react-calendar__tile {
+  padding: 10px 6px !important; /* malo veći unutarnji razmak unutar boxa */
+  min-height: 44px !important; /* osiguraj da boxovi nisu premali */
+  line-height: 1.15 !important;
+  border-radius: 8px !important;
+}
+
+/* na manjim ekranima smanjimo malo gap ako treba da ostane kompaktno */
+@media (max-width: 480px) {
+  .react-calendar__month-view__days { gap: 6px !important; }
+  .react-calendar__tile { padding: 8px 6px !important; min-height: 40px !important; }
+}
+
+/* ako želiš nešto malo veće, promijeni "gap: 8px" u 10px ili 12px */
+
