@@ -6,7 +6,11 @@ const BlockedDatesManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
+    // mode: 'single' | 'range'
+    mode: 'single',
     date: '',
+    startDate: '',
+    endDate: '',
     reason: '',
     allDay: true,
     startTime: '',
@@ -32,22 +36,49 @@ const BlockedDatesManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Validate and build payload
+      const payload = {
+        reason: formData.reason,
+        allDay: !!formData.allDay
+      };
+
+      if (formData.mode === 'single') {
+        if (!formData.date) return alert('Odaberite datum');
+        payload.date = formData.date;
+      } else {
+        if (!formData.startDate || !formData.endDate) return alert('Odaberite početak i kraj perioda');
+        const s = new Date(formData.startDate);
+        const e = new Date(formData.endDate);
+        if (isNaN(s.getTime()) || isNaN(e.getTime())) return alert('Neispravan format datuma');
+        if (e < s) return alert('Kraj perioda ne može biti prije početka');
+        payload.startDate = formData.startDate;
+        payload.endDate = formData.endDate;
+      }
+
+      if (!payload.allDay) {
+        if (!formData.startTime || !formData.endTime) return alert('Navedite početak i kraj vremena za segment');
+        payload.startTime = formData.startTime;
+        payload.endTime = formData.endTime;
+      }
+
       const response = await fetch('/api/admin/blocked-dates', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        fetchBlockedDates();
+        await fetchBlockedDates();
         resetForm();
       } else {
-        alert('Greška pri kreiranju blokiranog datuma');
+        const err = await response.json().catch(() => null);
+        alert('Greška pri kreiranju blokiranog datuma: ' + (err && err.message ? err.message : response.statusText));
       }
     } catch (error) {
       console.error('Error creating blocked date:', error);
+      alert('Greška pri kreiranju blokiranog datuma');
     }
   };
 
@@ -102,13 +133,48 @@ const BlockedDatesManagement = () => {
             <h3>Dodaj blokirani datum (godišnji odmor, praznik)</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
+                <label>Tip blokade:</label>
+                <select
+                  className="form-group input mode-select"
+                  value={formData.mode}
+                  onChange={(e) => setFormData({ ...formData, mode: e.target.value })}
+                >
+                  <option value="single">Jedan dan</option>
+                  <option value="range">Period (više dana)</option>
+                </select>
+              </div>
+
+              <div className="form-group">
                 <label>Datum:</label>
-                <input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  required
-                />
+                {formData.mode === 'single' ? (
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    required
+                  />
+                ) : (
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Početak:</label>
+                      <input
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Kraj:</label>
+                      <input
+                        type="date"
+                        value={formData.endDate}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -168,33 +234,45 @@ const BlockedDatesManagement = () => {
       )}
 
       <div className="blocked-dates-list">
-        {blockedDates.map((blockedDate) => (
-          <div key={blockedDate._id} className="blocked-date-card">
+        {blockedDates.map((block) => (
+          <div key={block._id} className="blocked-date-card">
             <div className="blocked-date-header">
-              <h3>{new Date(blockedDate.date).toLocaleDateString('hr-HR')}</h3>
-              <span className="reason-badge">{blockedDate.reason}</span>
+              <div className="date-range">
+                <h3>
+                  {block.startDate === block.endDate 
+                    ? new Date(block.startDate).toLocaleDateString('hr-HR')
+                    : `${new Date(block.startDate).toLocaleDateString('hr-HR')} - ${new Date(block.endDate).toLocaleDateString('hr-HR')}`
+                  }
+                </h3>
+                {block.dates?.length > 1 && (
+                  <span className="days-count">
+                    ({block.dates.length} {block.dates.length === 1 ? 'dan' : 'dana'})
+                  </span>
+                )}
+              </div>
+              <span className="reason-badge">{block.reason}</span>
             </div>
             
             <div className="blocked-date-details">
               <p>
                 <strong>Vrijeme:</strong>{' '}
-                {blockedDate.allDay 
+                {block.allDay 
                   ? 'Cijeli dan' 
-                  : `${blockedDate.startTime} - ${blockedDate.endTime}`
+                  : `${block.startTime} - ${block.endTime}`
                 }
               </p>
               <p>
                 <strong>Dodano:</strong>{' '}
-                {new Date(blockedDate.createdAt).toLocaleDateString('hr-HR')}
+                {new Date(block.createdAt).toLocaleDateString('hr-HR')}
               </p>
             </div>
 
             <div className="blocked-date-actions">
               <button
-                onClick={() => handleDelete(blockedDate._id)}
+                onClick={() => handleDelete(block.dates[0]._id)}
                 className="btn-delete"
               >
-                Ukloni
+                Ukloni{block.dates?.length > 1 ? ' period' : ''}
               </button>
             </div>
           </div>

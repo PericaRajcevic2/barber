@@ -33,16 +33,17 @@ router.get('/', async (req, res) => {
     let filter = {};
     
     if (date) {
-      // Koristi UTC za konzistentnost - početak i kraj dana u UTC
-      const startDate = new Date(date + 'T00:00:00.000Z');
-      const endDate = new Date(date + 'T23:59:59.999Z');
-      
-      console.log(`📅 GET appointments za datum: ${date}`);
-      console.log(`🕐 UTC raspon: ${startDate.toISOString()} - ${endDate.toISOString()}`);
-      
+      // Tretiraj incoming YYYY-MM-DD kao LOKALNI datum
+      const [y, m, d] = date.split('-').map(Number);
+      const startDate = new Date(y, m - 1, d, 0, 0, 0, 0);
+      const endDate = new Date(y, m - 1, d, 23, 59, 59, 999);
+
+      console.log(`📅 GET appointments za datum (lokalno): ${date}`);
+      console.log(`🕐 Lokalni raspon: ${startDate.toString()} - ${endDate.toString()}`);
+
       filter.date = {
         $gte: startDate,
-        $lt: endDate
+        $lt: new Date(endDate.getTime() + 1)
       };
     }
     

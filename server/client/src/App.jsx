@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Calendar from 'react-calendar';
+import CustomCalendar from './components/CustomCalendar';
 import 'react-calendar/dist/Calendar.css';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
@@ -13,7 +13,17 @@ function App() {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedService, setSelectedService] = useState('');
   const [services, setServices] = useState([]);
+  const [blockedDates, setBlockedDates] = useState([]);
   const [selectedTime, setSelectedTime] = useState('');
+  
+  // Refs za scrollanje
+  const timeSlotsSectionRef = React.useRef(null);
+  const customerFormRef = React.useRef(null);
+  
+  const scrollToSection = (ref) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
@@ -32,9 +42,23 @@ function App() {
     }
   }, []);
 
-  // Dohvati usluge pri učitavanju
+  // Fetch blocked dates
+  const fetchBlockedDates = async () => {
+    try {
+      const response = await fetch('/api/admin/blocked-dates');
+      if (response.ok) {
+        const data = await response.json();
+        setBlockedDates(data.map(item => new Date(item.date)));
+      }
+    } catch (error) {
+      console.error('Error fetching blocked dates:', error);
+    }
+  };
+
+  // Dohvati usluge i blokirane datume pri učitavanju
   useEffect(() => {
     fetchServices();
+    fetchBlockedDates();
   }, []);
 
   // Kada se promijeni datum, dohvati slobodne termine
@@ -59,13 +83,24 @@ function App() {
 
 const fetchAvailableSlots = async (selectedDate) => {
   try {
-    // Koristi YYYY-MM-DD format bez vremenske zone
-    const dateString = selectedDate.toISOString().split('T')[0];
-    console.log(`📅 Frontend traži termine za: ${dateString}`);
-    
+    // Koristi lokalni datum (YYYY-MM-DD) iz komponenta Date
+    // Ovo izbjegava pomak datuma kada se koristi toISOString() koji konvertira u UTC
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    console.log(`📅 Frontend traži termine za (lokalno): ${dateString}`);
+
     const response = await fetch(`/api/available-slots?date=${dateString}`);
-    const slots = await response.json();
-    
+    const data = await response.json();
+    // Ako server vrati grešku, data može biti objekt s porukom
+    if (!response.ok) {
+      console.error('Server error fetching slots:', data);
+      setAvailableSlots([]);
+      return;
+    }
+
+    const slots = data;
     setAvailableSlots(slots);
     setSelectedTime('');
     
@@ -90,17 +125,18 @@ const handleSubmit = async (e) => {
   try {
     // Kombiniraj datum i vrijeme u UTC
     const [hours, minutes] = selectedTime.split(':');
-    const appointmentDate = new Date(date);
-    
-    // Postavi vrijeme u UTC da se izbjegnu problemi s zonama
-    appointmentDate.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
-    
-    console.log(`🕒 Kreiran termin: ${appointmentDate.toISOString()}`);
+    // Kreiraj lokalni Date objekt za odabrani datum i vrijeme
+    const year = date.getFullYear();
+    const month = date.getMonth(); // monthIndex
+    const day = date.getDate();
+    const appointmentDate = new Date(year, month, day, parseInt(hours), parseInt(minutes), 0, 0);
+
+    console.log(`🕒 Kreiran lokalni termin: ${appointmentDate.toString()} | ISO: ${appointmentDate.toISOString()}`);
 
     const appointmentData = {
       ...formData,
       service: selectedService,
-      date: appointmentDate.toISOString() // Pošalji ISO string
+      date: appointmentDate.toISOString() // Pošalji ISO string (server očekuje ISO timestamp)
     };
 
     const response = await fetch('/api/appointments', {
@@ -189,11 +225,50 @@ const handleSubmit = async (e) => {
       <div className="booking-container">
         <div className="calendar-section">
           <h2>📅 Odaberite datum</h2>
-          <Calendar 
-            onChange={setDate} 
+          <CustomCalendar 
             value={date}
-            minDate={new Date()}
-            locale="hr-HR"
+            onChange={setDate}
+            blockedDates={blockedDates}
+            onDateSelect={() => setTimeout(() => scrollToSection(timeSlotsSectionRef), 100)}
+          
+            
+            tileClassName={({ date: tileDate, view }) => {
+              if (view !== 'month') return null;
+              
+              // Dodaj posebnu klasu za blokirane datume
+              const isBlocked = blockedDates.some(blockedDate => 
+                blockedDate.getFullYear() === tileDate.getFullYear() &&
+                blockedDate.getMonth() === tileDate.getMonth() &&
+                blockedDate.getDate() === tileDate.getDate()
+              );
+              
+              return isBlocked ? 'blocked-date' : null;
+            }}
+            
+            // Dodaj title za tooltip na blokirane datume
+            tileContent={({ date: tileDate, view }) => {
+              if (view !== 'month') return null;
+              
+              const isBlocked = blockedDates.some(blockedDate => 
+                blockedDate.getFullYear() === tileDate.getFullYear() &&
+                blockedDate.getMonth() === tileDate.getMonth() &&
+                blockedDate.getDate() === tileDate.getDate()
+              );
+              
+              if (isBlocked) {
+                return (
+                  <div className="blocked-date-tooltip">
+                    Ovaj termin je blokiran
+                  </div>
+                );
+              }
+              
+              return null;
+            }}
+            tileClassName={({ date: tileDate, view, activeStartDate }) => {
+              if (view !== 'month') return null;
+              return tileDate.getMonth() !== activeStartDate.getMonth() ? 'react-calendar__tile--neighbor' : null;
+            }}
             className="custom-calendar"
           />
           <div className="selected-date">
@@ -219,7 +294,7 @@ const handleSubmit = async (e) => {
             </select>
           </div>
 
-          <div className="form-section">
+          <div className="form-section" ref={timeSlotsSectionRef}>
   <label className="section-label">2. Odaberite vrijeme:</label>
   <div className="time-slots">
     {isLoading ? (
@@ -238,7 +313,11 @@ const handleSubmit = async (e) => {
             key={slot}
             type="button"
             className={`time-slot ${selectedTime === slot ? 'selected' : ''}`}
-            onClick={() => setSelectedTime(slot)}
+            onClick={() => {
+              setSelectedTime(slot);
+              // Scroll to customer form after selecting time
+              setTimeout(() => scrollToSection(customerFormRef), 100);
+            }}
           >
             {slot}
           </button>
@@ -248,7 +327,7 @@ const handleSubmit = async (e) => {
   </div>
 </div>
 
-          <form onSubmit={handleSubmit} className="customer-form">
+          <form onSubmit={handleSubmit} className="customer-form" ref={customerFormRef}>
             <label className="section-label">3. Vaši podaci:</label>
             <div className="form-grid">
               <input

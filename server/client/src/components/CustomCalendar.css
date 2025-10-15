@@ -1,0 +1,103 @@
+/* Custom Calendar styles */
+.custom-calendar {
+  width: 100%;
+  max-width: 100%;
+  background: white;
+  border: none !important;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Calendar tile base styles */
+.react-calendar__tile {
+  position: relative;
+  padding: 12px 8px !important;
+  height: auto !important;
+  border-radius: 8px !important;
+  margin: 2px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Blocked date styles */
+.calendar-tile.blocked {
+  background-color: #fff0f0 !important;
+  color: #ff4444 !important;
+  cursor: not-allowed !important;
+}
+
+.blocked-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.blocked-x {
+  font-size: 20px;
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.blocked-tooltip {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+/* Show tooltip on hover */
+.calendar-tile.blocked:hover .blocked-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Hover effects */
+.calendar-tile.blocked:hover {
+  background-color: #ffe0e0 !important;
+}
+
+/* Neighboring month dates */
+.calendar-tile.neighboring {
+  opacity: 0.3 !important;
+}
+
+/* Selected date */
+.react-calendar__tile--active {
+  background: #4CAF50 !important;
+  color: white !important;
+}
+
+/* Today's date */
+.react-calendar__tile--now {
+  background: #e6f4e6 !important;
+  color: #4CAF50 !important;
+}
+
+/* Navigation buttons */
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none !important;
+  font-size: 16px;
+  color: #333;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: #f8f8f8 !important;
+  border-radius: 6px;
+}

@@ -19,6 +19,16 @@ const StatisticsDashboard = () => {
     try {
       const response = await fetch(`/api/admin/statistics?range=${timeRange}`);
       const data = await response.json();
+      if (!response.ok) {
+        console.error('Server error fetching statistics:', data);
+        setStats({
+          totalAppointments: 0,
+          confirmedAppointments: 0,
+          revenue: 0,
+          popularServices: []
+        });
+        return;
+      }
       setStats(data);
     } catch (error) {
       console.error('Error fetching statistics:', error);
@@ -94,7 +104,7 @@ const StatisticsDashboard = () => {
       <div className="popular-services">
         <h3>🎯 Najpopularnije usluge</h3>
         <div className="services-list">
-          {stats.popularServices.map((service, index) => (
+          {(stats.popularServices || []).map((service, index) => (
             <div key={service._id} className="service-stat">
               <div className="service-rank">#{index + 1}</div>
               <div className="service-info">

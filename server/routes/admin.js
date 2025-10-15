@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const Service = require('../models/Service');
 const WorkingHours = require('../models/WorkingHours');
@@ -38,22 +39,30 @@ router.get('/statistics', async (req, res) => {
       apt.status === 'confirmed' || apt.status === 'completed'
     ).length;
     
-    const revenue = appointments.reduce((total, apt) => total + apt.service.price, 0);
-    
-    // Popularne usluge
+    // Izračunaj prihod, ali samo za appointment-e koji imaju validnu service referencu
+    const revenue = appointments.reduce((total, apt) => {
+      if (apt.service && typeof apt.service.price === 'number') {
+        return total + apt.service.price;
+      }
+      return total;
+    }, 0);
+
+    // Popularne usluge (samo one koje imaju validnu service)
     const serviceCounts = {};
     appointments.forEach(apt => {
+      if (!apt.service) return; // preskoči ako nema service
+
       const serviceId = apt.service._id.toString();
       if (!serviceCounts[serviceId]) {
         serviceCounts[serviceId] = {
           _id: serviceId,
-          name: apt.service.name,
+          name: apt.service.name || '(unknown)',
           count: 0,
           revenue: 0
         };
       }
       serviceCounts[serviceId].count++;
-      serviceCounts[serviceId].revenue += apt.service.price;
+      serviceCounts[serviceId].revenue += (typeof apt.service.price === 'number' ? apt.service.price : 0);
     });
 
     const popularServices = Object.values(serviceCounts)
@@ -144,11 +153,80 @@ router.post('/working-hours', async (req, res) => {
   }
 });
 
+// POST /api/admin/working-hours/reset - Postavi zadano radno vrijeme ako nema podataka
+router.post('/working-hours/reset', async (req, res) => {
+  try {
+    const count = await WorkingHours.countDocuments();
+    if (count > 0) {
+      const existing = await WorkingHours.find().sort({ dayOfWeek: 1 });
+      return res.json(existing);
+    }
+
+    const defaults = [
+      { dayOfWeek: 1, dayName: 'Ponedjeljak', startTime: '09:00', endTime: '17:00', isWorking: true },
+      { dayOfWeek: 2, dayName: 'Utorak', startTime: '09:00', endTime: '17:00', isWorking: true },
+      { dayOfWeek: 3, dayName: 'Srijeda', startTime: '09:00', endTime: '17:00', isWorking: true },
+      { dayOfWeek: 4, dayName: 'Četvrtak', startTime: '09:00', endTime: '17:00', isWorking: true },
+      { dayOfWeek: 5, dayName: 'Petak', startTime: '09:00', endTime: '17:00', isWorking: true },
+      { dayOfWeek: 6, dayName: 'Subota', startTime: '10:00', endTime: '15:00', isWorking: true },
+      { dayOfWeek: 0, dayName: 'Nedjelja', startTime: '00:00', endTime: '00:00', isWorking: false }
+    ];
+
+    const created = await WorkingHours.insertMany(defaults);
+    res.status(201).json(created);
+  } catch (error) {
+    console.error('❌ Greška pri resetiranju radnog vremena:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // GET /api/admin/blocked-dates - Dohvati blokirane datume
 router.get('/blocked-dates', async (req, res) => {
   try {
     const blockedDates = await BlockedDate.find().sort({ date: 1 });
-    res.json(blockedDates);
+    
+    // Grupiraj datume po periodId ako postoji
+    const groupedDates = blockedDates.reduce((acc, date) => {
+      if (date.periodId) {
+        if (!acc[date.periodId]) {
+          acc[date.periodId] = {
+            _id: date.periodId,
+            startDate: date.date,
+            endDate: date.date,
+            reason: date.reason,
+            allDay: date.allDay,
+            startTime: date.startTime,
+            endTime: date.endTime,
+            createdAt: date.createdAt,
+            dates: [date]
+          };
+        } else {
+          acc[date.periodId].dates.push(date);
+          if (date.date < acc[date.periodId].startDate) {
+            acc[date.periodId].startDate = date.date;
+          }
+          if (date.date > acc[date.periodId].endDate) {
+            acc[date.periodId].endDate = date.date;
+          }
+        }
+      } else {
+        // Pojedinačni datumi idu direktno u rezultat
+        acc[date._id] = {
+          _id: date._id,
+          startDate: date.date,
+          endDate: date.date,
+          reason: date.reason,
+          allDay: date.allDay,
+          startTime: date.startTime,
+          endTime: date.endTime,
+          createdAt: date.createdAt,
+          dates: [date]
+        };
+      }
+      return acc;
+    }, {});
+
+    res.json(Object.values(groupedDates));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -157,22 +235,100 @@ router.get('/blocked-dates', async (req, res) => {
 // POST /api/admin/blocked-dates - Kreiraj blokirani datum
 router.post('/blocked-dates', async (req, res) => {
   try {
-    const blockedDate = new BlockedDate(req.body);
-    const savedBlockedDate = await blockedDate.save();
-    res.status(201).json(savedBlockedDate);
+    const { date, startDate, endDate, reason, allDay = true, startTime, endTime } = req.body;
+
+    if (!reason || (typeof reason !== 'string')) {
+      return res.status(400).json({ message: 'Razlog je obavezan' });
+    }
+
+    // Validate time fields if not allDay
+    if (!allDay) {
+      if (!startTime || !endTime) {
+        return res.status(400).json({ message: 'Za vremenski period potrebno je navesti početak i kraj' });
+      }
+      const timeRegex = /^\d{2}:\d{2}$/;
+      if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+        return res.status(400).json({ message: 'Format vremena mora biti HH:MM' });
+      }
+    }
+
+    // Helper to create a BlockedDate doc
+    const createForDate = async (d, periodData = {}) => {
+      const doc = new BlockedDate({
+        date: d,
+        reason,
+        allDay: !!allDay,
+        startTime: allDay ? undefined : startTime,
+        endTime: allDay ? undefined : endTime,
+        ...periodData
+      });
+      return await doc.save();
+    };
+
+    if (startDate && endDate) {
+      // Range mode
+      const s = new Date(startDate);
+      const e = new Date(endDate);
+      if (isNaN(s.getTime()) || isNaN(e.getTime())) {
+        return res.status(400).json({ message: 'Neispravan format datuma u rasponu' });
+      }
+      if (e < s) {
+        return res.status(400).json({ message: 'Kraj perioda ne može biti prije početka' });
+      }
+
+      const periodId = new mongoose.Types.ObjectId().toString();
+      const created = [];
+      const cur = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+
+      while (cur <= e) {
+        const isFirst = cur.getTime() === s.getTime();
+        const isLast = cur.getTime() === e.getTime();
+        
+        const saved = await createForDate(new Date(cur), {
+          periodId,
+          isRangeStart: isFirst,
+          isRangeEnd: isLast
+        });
+        created.push(saved);
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      return res.status(201).json(created);
+    }
+
+    if (date) {
+      // Single date mode
+      const single = new Date(date);
+      if (isNaN(single.getTime())) {
+        return res.status(400).json({ message: 'Neispravan datum' });
+      }
+      const saved = await createForDate(single);
+      return res.status(201).json(saved);
+    }
+
+    return res.status(400).json({ message: 'Treba navesti date ili startDate i endDate' });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// DELETE /api/admin/blocked-dates/:id - Obriši blokirani datum
+// DELETE /api/admin/blocked-dates/:id - Obriši blokirani datum ili period
 router.delete('/blocked-dates/:id', async (req, res) => {
   try {
-    const blockedDate = await BlockedDate.findByIdAndDelete(req.params.id);
+    const blockedDate = await BlockedDate.findById(req.params.id);
     if (!blockedDate) {
       return res.status(404).json({ message: 'Blokirani datum nije pronađen' });
     }
-    res.json({ message: 'Blokirani datum obrisan' });
+
+    if (blockedDate.periodId) {
+      // Ako je dio perioda, obriši sve datume s istim periodId
+      await BlockedDate.deleteMany({ periodId: blockedDate.periodId });
+      res.json({ message: 'Period je obrisan' });
+    } else {
+      // Obriši samo pojedinačni datum
+      await BlockedDate.findByIdAndDelete(req.params.id);
+      res.json({ message: 'Blokirani datum obrisan' });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

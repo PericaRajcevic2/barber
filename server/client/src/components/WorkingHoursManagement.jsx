@@ -21,6 +21,18 @@ const WorkingHoursManagement = () => {
     }
   };
 
+  const resetToDefaults = async () => {
+    try {
+      const response = await fetch('/api/admin/working-hours/reset', {
+        method: 'POST'
+      });
+      const data = await response.json();
+      setWorkingHours(data);
+    } catch (error) {
+      console.error('Error resetting working hours:', error);
+    }
+  };
+
   const handleTimeChange = (index, field, value) => {
     const updatedHours = [...workingHours];
     updatedHours[index][field] = value;
@@ -60,6 +72,20 @@ const WorkingHoursManagement = () => {
 
   if (loading) {
     return <div className="loading">Učitavanje...</div>;
+  }
+
+  if (!loading && (!workingHours || workingHours.length === 0)) {
+    return (
+      <div className="management-container">
+        <div className="section-header">
+          <h2>Upravljanje Radnim Vremenom</h2>
+        </div>
+        <div style={{padding: '20px'}}>
+          <p>Trenutno nema konfiguriranih radnih dana.</p>
+          <button className="btn-primary" onClick={resetToDefaults}>Vraćanje zadane konfiguracije</button>
+        </div>
+      </div>
+    );
   }
 
   return (

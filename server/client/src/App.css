@@ -1,3 +1,8 @@
+/* Enable smooth scrolling globally */
+html {
+  scroll-behavior: smooth;
+}
+
 /* ORIGINAL CSS (user provided) */
 .App {
   max-width: 1200px;
@@ -116,10 +121,10 @@
 .no-slots {
   padding: 20px;
   text-align: center;
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.2);
   border-radius: 10px;
-  color: #856404;
+  color: #ff0000;
   font-weight: 500;
 }
 
@@ -225,9 +230,167 @@
 /* React Calendar Customization */
 .custom-calendar {
   width: 100%;
-  border: none;
+  border: none !important;
   border-radius: 10px;
   padding: 10px;
+  background: transparent !important;
+}
+
+/* Calendar navigation */
+.react-calendar__navigation button {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+/* Calendar tiles */
+.react-calendar__tile {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 8px !important;
+  margin: 2px !important;
+}
+
+.react-calendar__tile:enabled:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Blocked dates */
+.blocked-date {
+  background-color: rgba(255, 0, 0, 0.15) !important;
+  color: #ff4444 !important;
+}
+
+.blocked-date:hover {
+  background-color: rgba(255, 0, 0, 0.2) !important;
+  cursor: not-allowed !important;
+}
+
+/* Month view weekdays */
+.react-calendar__month-view__weekdays {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Selected date */
+.react-calendar__tile--active {
+  background: #4CAF50 !important;
+  color: white !important;
+}
+
+/* Neighboring month */
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Today */
+.react-calendar__tile--now {
+  background: rgba(76, 175, 80, 0.15) !important;
+}
+
+/* Stilovi za blokirane datume */
+.calendar-tile-blocked {
+  background-color: #ffecec !important;
+  color: #ff0000 !important;
+  position: relative;
+  cursor: not-allowed !important;
+  font-weight: bold !important;
+}
+
+.calendar-tile-blocked:hover {
+  background-color: #ffe0e0 !important;
+}
+
+.calendar-tile-blocked .calendar-tile-content {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.blocked-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.blocked-x {
+  font-size: 24px;
+  color: #ff0000;
+  opacity: 0.7;
+  font-weight: bold;
+}
+
+/* Stilovi za susjedne mjesece */
+.calendar-tile-neighboring {
+  opacity: 0.3 !important;
+}
+
+/* Poboljšani stilovi za kalendar */
+.react-calendar__tile {
+  padding: 14px 10px !important;
+  position: relative;
+  border: 1px solid #e6e6e6 !important;
+  margin: 1px !important;
+  border-radius: 6px !important;
+  background: white !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-calendar__tile:enabled:hover {
+  background: #f0f0f0 !important;
+  border-color: #d0d0d0 !important;
+  transform: translateY(-1px) !important;
+}
+
+.react-calendar__tile--active {
+  background: #4CAF50 !important;
+  color: white !important;
+  border-color: #4CAF50 !important;
+  font-weight: bold !important;
+}
+
+/* Tooltip za blokirane datume */
+.calendar-tile-blocked::before {
+  content: "Termin je blokiran";
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+.calendar-tile-blocked::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.calendar-tile-blocked:hover::before,
+.calendar-tile-blocked:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 .react-calendar__tile--active {
@@ -426,6 +589,19 @@ body {
   background: rgba(255,255,255,0.02);
   color: var(--muted);
   border: 1px solid rgba(255,255,255,0.03);
+
+/* Style for neighbor month tiles that we disabled */
+.react-calendar__tile--neighboringMonth {
+  color: #999 !important;
+  background: transparent !important;
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+}
+.react-calendar__tile--neighboringMonth:enabled:hover,
+.react-calendar__tile--neighboringMonth:enabled:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+}
 }
 
 /* inputs / selects - dark style */
@@ -771,6 +947,56 @@ select {
   font-weight: 700 !important;
 }
 
+/* Blocked date styles */
+.blocked-date-tooltip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.blocked-date-tooltip span {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* Tooltip styling */
+.react-calendar__tile[aria-disabled="true"] {
+  position: relative;
+  cursor: help !important;
+}
+
+.react-calendar__tile[aria-disabled="true"]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Add arrow to tooltip */
+.react-calendar__tile[aria-disabled="true"]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+  z-index: 1000;
+}
+
 /* remove unexpected white boxes/diamond shapes some calendar themes add */
 .react-calendar__month-view__days__day > abbr,
 .react-calendar__tile > button {
@@ -868,13 +1094,29 @@ select.service-select {
 }
 
 /* === Calendar: past days light red, available days light grey with white border === */
-/* Past/disabled days (commonly have aria-disabled="true" or .react-calendar__tile--disabled) */
-.react-calendar__tile[aria-disabled="true"],
-.react-calendar__tile.react-calendar__tile--disabled {
-  background: rgba(255,99,99,0.12) !important; /* svijetlo crvena pozadina */
-  color: rgba(0,0,0,0.85) !important; /* tamniji tekst za bolji kontrast */
-  border: 1px solid rgba(255,99,99,0.18) !important;
+/* Past/disabled days and blocked dates */
+.react-calendar .react-calendar__tile[aria-disabled="true"],
+.react-calendar .react-calendar__tile--disabled,
+.react-calendar__month-view__days__day--disabled,
+.custom-calendar .react-calendar__tile--disabled {
+  background-color: #ff000026 !important; /* svijetlo crvena pozadina */
+  color: #ff0000 !important; /* crveni tekst */
+  border: 1px solid rgba(255,0,0,0.2) !important;
   box-shadow: none !important;
+  cursor: not-allowed !important;
+  position: relative;
+  /* Dodajemo X preko datuma */
+  text-decoration: line-through !important;
+  opacity: 1 !important;
+}
+
+/* Hover effect for blocked dates */
+.react-calendar .react-calendar__tile[aria-disabled="true"]:hover,
+.react-calendar .react-calendar__tile--disabled:hover,
+.react-calendar__month-view__days__day--disabled:hover,
+.custom-calendar .react-calendar__tile--disabled:hover {
+  background-color: #ff000040 !important; /* tamnija crvena na hover */
+  opacity: 1 !important;
 }
 
 /* Available days (enabled tiles that are not active/selected) */
@@ -886,11 +1128,27 @@ select.service-select {
   box-shadow: none !important;
 }
 
+/* Blocked days (disabled tiles) */
+.react-calendar__tile--disabled:not(.react-calendar__tile--neighboringMonth) {
+  background: #ffebeb !important; /* svijetlo crvena pozadina */
+  color: #ff0000 !important; /* crveni tekst */
+  border: 1px solid #ffd5d5 !important;
+  opacity: 1 !important;
+  font-weight: bold !important;
+  text-decoration: line-through !important;
+}
+
 /* Hover for available days */
 .react-calendar__tile:enabled:not([aria-disabled="true"]):hover {
   background: rgba(230,230,230,0.95) !important;
   transform: translateY(-3px) !important;
   box-shadow: 0 8px 22px rgba(2,6,23,0.06) !important;
+}
+
+/* Hover for blocked days */
+.react-calendar__tile--disabled:not(.react-calendar__tile--neighboringMonth):hover {
+  background: #ffe0e0 !important; /* tamnija crvena na hover */
+  cursor: not-allowed !important;
 }
 
 /* Keep selected/active tile styling from theme (override only if necessary) */

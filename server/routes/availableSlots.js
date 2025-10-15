@@ -13,11 +13,12 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ message: 'Datum je obavezan' });
     }
 
-    // Koristi UTC datume za konzistentnost
-    const selectedDate = new Date(date + 'T00:00:00.000Z'); // Postavi na početak dana u UTC
-    
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
+  // Tretiraj incoming YYYY-MM-DD kao LOKALNI datum (bez pomaka)
+  const [y, m, d] = date.split('-').map(Number);
+  const selectedDate = new Date(y, m - 1, d, 0, 0, 0, 0); // lokalni početak dana
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
     // Provjeri je li datum u prošlosti
     if (selectedDate < today) {
@@ -25,14 +26,14 @@ router.get('/', async (req, res) => {
     }
 
     // Provjeri je li datum blokiran
-    const startOfDay = new Date(selectedDate);
-    const endOfDay = new Date(selectedDate);
-    endOfDay.setUTCDate(endOfDay.getUTCDate() + 1); // Sljedeći dan u UTC
+    // Koristi lokalne granice dana, ali za upit u bazi pretvori ih u ISO (UTC) stringove
+    const startOfDay = new Date(y, m - 1, d, 0, 0, 0, 0);
+    const endOfDay = new Date(y, m - 1, d, 23, 59, 59, 999);
 
     const blockedDate = await BlockedDate.findOne({
       date: {
         $gte: startOfDay,
-        $lt: endOfDay
+        $lt: new Date(endOfDay.getTime() + 1)
       }
     });
 
@@ -40,9 +41,9 @@ router.get('/', async (req, res) => {
       return res.json([]);
     }
 
-    // Pronađi radno vrijeme za taj dan (dan u tjednu je isti u svim zonama)
-    const dayOfWeek = selectedDate.getUTCDay();
-    const workingHours = await WorkingHours.findOne({ dayOfWeek });
+  // Pronađi radno vrijeme za taj dan koristeći LOKALNI dan u tjednu
+  const dayOfWeek = selectedDate.getDay(); // 0-6 local (nedjelja-subota)
+  const workingHours = await WorkingHours.findOne({ dayOfWeek });
 
     if (!workingHours || !workingHours.isWorking) {
       return res.json([]);
@@ -52,36 +53,63 @@ router.get('/', async (req, res) => {
     const timeSlots = generateTimeSlots(workingHours.startTime, workingHours.endTime, 30);
     
     // ⭐⭐ ISPRAVNO: Pronađi ZAUZETE termine za TAJ DAN u UTC ⭐⭐
+    // Pripremi ISO granice za upit (DB pohranjuje u UTC)
+    const startIso = startOfDay.toISOString();
+    const endIso = new Date(endOfDay.getTime() + 1).toISOString();
+
     const appointments = await Appointment.find({
       date: {
-        $gte: startOfDay,
-        $lt: endOfDay
+        $gte: new Date(startIso),
+        $lt: new Date(endIso)
       },
       status: { $in: ['pending', 'confirmed'] }
     }).populate('service');
 
-    console.log(`🔍 Tražim termine za: ${selectedDate.toISOString()}`);
-    console.log(`📅 Raspon: ${startOfDay.toISOString()} - ${endOfDay.toISOString()}`);
+  console.log(`🔍 Tražim termine za (lokalno): ${selectedDate.toString()}`);
+  console.log(`📅 Lokalni raspon: ${startOfDay.toString()} - ${endOfDay.toString()}`);
+  console.log(`📅 ISO raspon za DB upit: ${startIso} - ${endIso}`);
     console.log(`📋 Pronađeno ${appointments.length} zauzetih termina:`);
     
     appointments.forEach(apt => {
-      console.log(`   - ${apt.date.toISOString()} | ${apt.customerName} | ${apt.service.name}`);
+      // Guard against missing populated service (could be deleted)
+      const serviceName = apt.service ? apt.service.name : '(unknown service)';
+      try {
+        console.log(`   - ${apt.date.toISOString()} | ${apt.customerName} | ${serviceName}`);
+      } catch (err) {
+        console.log('   - (invalid appointment object)', apt);
+      }
     });
 
-    // Filtriraj zauzete termine - koristi UTC vrijeme za usporedbu
+    // Filtriraj zauzete termine - pretvori appointment.date (UTC) u LOKALNO vrijeme
     const bookedSlots = appointments.map(appointment => {
       const appointmentTime = new Date(appointment.date);
-      // Vrati vrijeme u formatu HH:MM iz UTC vremena
-      return appointmentTime.getUTCHours().toString().padStart(2, '0') + ':' + 
-             appointmentTime.getUTCMinutes().toString().padStart(2, '0');
+      // Vrati vrijeme u formatu HH:MM iz LOKALNOG vremena
+      return appointmentTime.getHours().toString().padStart(2, '0') + ':' + 
+             appointmentTime.getMinutes().toString().padStart(2, '0');
     });
 
     console.log(`🕒 Zauzeti termini:`, bookedSlots);
     console.log(`✅ Dostupni termini:`, timeSlots.filter(slot => !bookedSlots.includes(slot)));
 
     const availableSlots = timeSlots.filter(slot => !bookedSlots.includes(slot));
+    // Ako je odabrani datum danas (lokalno), izbaci termine koji su već prošli
+    const now = new Date();
+    const monthIndex = m - 1;
+    const isToday = startOfDay.getFullYear() === now.getFullYear() &&
+                    startOfDay.getMonth() === now.getMonth() &&
+                    startOfDay.getDate() === now.getDate();
+
+    let filteredAvailableSlots = availableSlots;
+    if (isToday) {
+      filteredAvailableSlots = availableSlots.filter(slot => {
+        const [hh, mm] = slot.split(':').map(Number);
+        const slotDate = new Date(y, monthIndex, d, hh, mm, 0, 0);
+        return slotDate.getTime() > now.getTime(); // dozvoli samo buduće termine
+      });
+      console.log(`⏱️ Filtrirano termine za danas, priješnjene su uklonjene. Preostalo:`, filteredAvailableSlots);
+    }
     
-    res.json(availableSlots);
+    res.json(filteredAvailableSlots);
   } catch (error) {
     console.error('❌ Error fetching available slots:', error);
     res.status(500).json({ message: error.message });
@@ -91,12 +119,15 @@ router.get('/', async (req, res) => {
 // Pomocna funkcija za generiranje vremenskih slotova
 function generateTimeSlots(start, end, interval) {
   const slots = [];
-  let currentTime = new Date(`1970-01-01T${start}:00Z`); // Koristi UTC
-  const endTime = new Date(`1970-01-01T${end}:00Z`);
-  
+  // Koristi lokalno vrijeme (HR) za generiranje slotova
+  const [startH, startM] = start.split(':').map(Number);
+  const [endH, endM] = end.split(':').map(Number);
+  let currentTime = new Date(1970, 0, 1, startH, startM, 0, 0);
+  const endTime = new Date(1970, 0, 1, endH, endM, 0, 0);
+
   while (currentTime < endTime) {
-    const timeString = currentTime.getUTCHours().toString().padStart(2, '0') + ':' + 
-                       currentTime.getUTCMinutes().toString().padStart(2, '0');
+    const timeString = currentTime.getHours().toString().padStart(2, '0') + ':' +
+                       currentTime.getMinutes().toString().padStart(2, '0');
     slots.push(timeString);
     currentTime = new Date(currentTime.getTime() + interval * 60000);
   }
