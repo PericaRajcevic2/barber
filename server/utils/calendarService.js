@@ -45,7 +45,7 @@ class CalendarService {
       };
 
       const response = await this.calendar.events.insert({
-        calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
+        calendarId: process.env.GOOGLE_CALENDAR_ID,
         resource: event,
         sendUpdates: 'all',
       });
@@ -86,7 +86,7 @@ class CalendarService {
       };
 
       const response = await this.calendar.events.update({
-        calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
+        calendarId: process.env.GOOGLE_CALENDAR_ID,
         eventId: eventId,
         resource: event,
         sendUpdates: 'all',
@@ -108,7 +108,7 @@ class CalendarService {
       }
 
       await this.calendar.events.delete({
-        calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
+        calendarId: process.env.GOOGLE_CALENDAR_ID,
         eventId: eventId,
         sendUpdates: 'all',
       });

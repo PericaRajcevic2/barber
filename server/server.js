@@ -62,7 +62,7 @@ app.use('/api/working-hours', require('./routes/workingHours'));
 app.use('/api/available-slots', require('./routes/availableSlots'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/auth', require('./routes/googleAuth'));
+app.use('/api/google', require('./routes/googleAuth')); // Promijenjen prefix za Google auth
 
 const PORT = process.env.PORT || 5000;
 

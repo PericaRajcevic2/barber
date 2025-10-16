@@ -3,10 +3,16 @@ const router = express.Router();
 const { google } = require('googleapis');
 const calendarService = require('../utils/calendarService');
 
+// Debug log za provjeru env varijabli
+console.log('Google OAuth Environment Variables:');
+console.log('CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
+console.log('CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET);
+console.log('REDIRECT_URI:', process.env.GOOGLE_REDIRECT_URI);
+
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'http://localhost:5000/api/auth/google/callback'
+  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/google/callback'
 );
 
 // Spremi tokene globalno (u produkciji koristi bazu)
