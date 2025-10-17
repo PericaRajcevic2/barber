@@ -168,14 +168,29 @@ const handleSubmit = async (e) => {
       console.log('✅ Termin spremljen:', savedAppointment);
     } else {
       setIsLoading(false);
-      const error = await response.json();
-      setSuccessMessage(`Greška: ${error.message}`);
+      let errorMsg = 'Došlo je do greške pri rezervaciji. Pokušajte ponovo.';
+      try {
+        // Pokušaj parsirati JSON error
+        const error = await response.json();
+        if (error && error.message) errorMsg = `Greška: ${error.message}`;
+      } catch (e) {
+        // Ako nije JSON (npr. HTML/502), prikaži user-friendly poruku
+        if (response.status === 502 || response.status === 503) {
+          errorMsg = 'Server je trenutno nedostupan. Pokušajte ponovo za minutu.';
+        } else {
+          errorMsg = 'Neočekivana greška na serveru. Pokušajte kasnije.';
+        }
+      }
+      setSuccessMessage(errorMsg);
       setShowSuccessModal(true);
     }
   } catch (error) {
     setIsLoading(false);
-    console.error('❌ Error creating appointment:', error);
-    setSuccessMessage('Došlo je do greške pri rezervaciji. Pokušajte ponovo.');
+    let errorMsg = 'Došlo je do greške pri rezervaciji. Pokušajte ponovo.';
+    if (error && error.message && error.message.includes('Unexpected token')) {
+      errorMsg = 'Server je trenutno nedostupan ili je u cold startu. Pokušajte ponovo za minutu.';
+    }
+    setSuccessMessage(errorMsg);
     setShowSuccessModal(true);
   }
 };
