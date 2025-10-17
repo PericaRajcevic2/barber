@@ -17,6 +17,7 @@ function App() {
   const [selectedTime, setSelectedTime] = useState('');
   
   // Refs za scrollanje
+  const serviceSectionRef = React.useRef(null);
   const timeSlotsSectionRef = React.useRef(null);
   const customerFormRef = React.useRef(null);
   
@@ -236,7 +237,7 @@ const handleSubmit = async (e) => {
             value={date}
             onChange={setDate}
             blockedDates={blockedDates}
-            onDateSelect={() => setTimeout(() => scrollToSection(timeSlotsSectionRef), 100)}
+            onDateSelect={() => setTimeout(() => scrollToSection(serviceSectionRef), 100)}
           />
           <div className="selected-date">
             Odabrani datum: <strong>{formatDate(date)}</strong>
@@ -246,11 +247,14 @@ const handleSubmit = async (e) => {
         <div className="booking-form">
           <h2>✂️ Rezervirajte termin</h2>
           
-          <div className="form-section">
+          <div className="form-section" ref={serviceSectionRef}>
             <label className="section-label">1. Odaberite uslugu:</label>
             <select 
               value={selectedService} 
-              onChange={(e) => setSelectedService(e.target.value)}
+              onChange={(e) => {
+                setSelectedService(e.target.value);
+                setTimeout(() => scrollToSection(timeSlotsSectionRef), 100);
+              }}
               className="service-select"
             >
               {services.map(service => (
@@ -343,7 +347,7 @@ const handleSubmit = async (e) => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
+        <div className="modal-overlay" style={{zIndex: 9999, position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh'}} onClick={() => setShowSuccessModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-icon">
               <span className="success-checkmark">✓</span>
