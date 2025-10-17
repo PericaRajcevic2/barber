@@ -152,11 +152,9 @@ const handleSubmit = async (e) => {
 
     if (response.ok) {
       const savedAppointment = await response.json();
-      
-      // Prikaži success modal
+      setIsLoading(false);
       setSuccessMessage(`Vaš termin je uspješno rezerviran za ${formatDate(date)} u ${selectedTime}!`);
       setShowSuccessModal(true);
-      
       // Reset form
       setFormData({ 
         customerName: '', 
@@ -165,22 +163,20 @@ const handleSubmit = async (e) => {
         notes: '' 
       });
       setSelectedTime('');
-      
       // Osvježi dostupne termine
       await fetchAvailableSlots(date);
-      
       console.log('✅ Termin spremljen:', savedAppointment);
     } else {
+      setIsLoading(false);
       const error = await response.json();
       setSuccessMessage(`Greška: ${error.message}`);
       setShowSuccessModal(true);
     }
   } catch (error) {
+    setIsLoading(false);
     console.error('❌ Error creating appointment:', error);
     setSuccessMessage('Došlo je do greške pri rezervaciji. Pokušajte ponovo.');
     setShowSuccessModal(true);
-  } finally {
-    setIsLoading(false);
   }
 };
 
