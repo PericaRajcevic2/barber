@@ -53,24 +53,30 @@ io.on('connection', (socket) => {
 // Export io za korištenje u drugim fileovima
 app.set('io', io);
 
-// Osnovna ruta za test
-app.get('/', (req, res) => {
-  res.json({ message: 'Barber Booking API radi!' });
-});
-
-// Rute
+// API Rute - MORAJU biti prije static file servinga!
 app.use('/api/services', require('./routes/services'));
 app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/working-hours', require('./routes/workingHours'));
 app.use('/api/available-slots', require('./routes/availableSlots'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/google', require('./routes/googleAuth')); // Promijenjen prefix za Google auth
+app.use('/api/google', require('./routes/googleAuth'));
+
+// Health check za API
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    message: 'Barber Booking API radi!',
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Serve static files from React app in production
 if (process.env.NODE_ENV === 'production') {
+  // Serve static files
   app.use(express.static(path.join(__dirname, 'client/dist')));
   
+  // Handle React routing, return all requests to React app
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'client/dist/index.html'));
   });

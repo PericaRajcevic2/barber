@@ -37,24 +37,6 @@ const CustomCalendar = ({ value, onChange, blockedDates, onDateSelect }) => {
     }
   };
 
-  const renderTileContent = ({ date, view }) => {
-    if (view !== 'month') return null;
-    
-    const isBlocked = isDateBlocked(date);
-    const isNeighboringMonth = date.getMonth() !== value.getMonth();
-    
-    return (
-      <div className={`calendar-tile ${isBlocked ? 'blocked' : ''} ${isNeighboringMonth ? 'neighboring' : ''}`}>
-        {isBlocked && (
-          <div className="blocked-marker">
-            <span className="blocked-x">×</span>
-            <span className="blocked-tooltip">Termin je blokiran</span>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <Calendar
       ref={calendarRef}
@@ -70,7 +52,6 @@ const CustomCalendar = ({ value, onChange, blockedDates, onDateSelect }) => {
         const isBlocked = isDateBlocked(date);
         if (isBlocked) return 'blocked-date';
         if (date.getDay() === 0) return 'blocked-date'; // Nedjelja
-        // React Calendar automatski dodaje .react-calendar__tile--neighboringMonth na dane izvan mjeseca
         return '';
       }}
       tileDisabled={({ date, view }) => {
@@ -80,7 +61,6 @@ const CustomCalendar = ({ value, onChange, blockedDates, onDateSelect }) => {
       }}
       tileContent={({ date, view }) => {
         if (view !== 'month') return null;
-        // Nema X-a na blokiranim danima
         return null;
       }}
     />

@@ -237,46 +237,6 @@ const handleSubmit = async (e) => {
             onChange={setDate}
             blockedDates={blockedDates}
             onDateSelect={() => setTimeout(() => scrollToSection(timeSlotsSectionRef), 100)}
-          
-            
-            tileClassName={({ date: tileDate, view }) => {
-              if (view !== 'month') return null;
-              
-              // Dodaj posebnu klasu za blokirane datume
-              const isBlocked = blockedDates.some(blockedDate => 
-                blockedDate.getFullYear() === tileDate.getFullYear() &&
-                blockedDate.getMonth() === tileDate.getMonth() &&
-                blockedDate.getDate() === tileDate.getDate()
-              );
-              
-              return isBlocked ? 'blocked-date' : null;
-            }}
-            
-            // Dodaj title za tooltip na blokirane datume
-            tileContent={({ date: tileDate, view }) => {
-              if (view !== 'month') return null;
-              
-              const isBlocked = blockedDates.some(blockedDate => 
-                blockedDate.getFullYear() === tileDate.getFullYear() &&
-                blockedDate.getMonth() === tileDate.getMonth() &&
-                blockedDate.getDate() === tileDate.getDate()
-              );
-              
-              if (isBlocked) {
-                return (
-                  <div className="blocked-date-tooltip">
-                    Ovaj termin je blokiran
-                  </div>
-                );
-              }
-              
-              return null;
-            }}
-            tileClassName={({ date: tileDate, view, activeStartDate }) => {
-              if (view !== 'month') return null;
-              return tileDate.getMonth() !== activeStartDate.getMonth() ? 'react-calendar__tile--neighbor' : null;
-            }}
-            className="custom-calendar"
           />
           <div className="selected-date">
             Odabrani datum: <strong>{formatDate(date)}</strong>

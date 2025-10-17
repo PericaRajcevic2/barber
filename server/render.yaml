@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: barber-booking
+    env: node
+    region: frankfurt
+    plan: free
+    buildCommand: cd client && npm install && npm run build && cd ..
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
