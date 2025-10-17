@@ -60,7 +60,7 @@ app.use('/api/working-hours', require('./routes/workingHours'));
 app.use('/api/available-slots', require('./routes/availableSlots'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/google', require('./routes/googleAuth'));
+app.use('/api/auth/google', require('./routes/googleAuth'));
 app.use('/api/setup', require('./routes/setup')); // Setup/seed endpoints
 
 // Health check za API

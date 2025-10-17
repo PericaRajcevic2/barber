@@ -12,14 +12,14 @@ console.log('REDIRECT_URI:', process.env.GOOGLE_REDIRECT_URI);
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/google/callback'
+  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'
 );
 
 // Spremi tokene globalno (u produkciji koristi bazu)
 let storedTokens = null;
 
 // Generiraj URL za Google OAuth
-router.get('/google', (req, res) => {
+router.get('/', (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: [
@@ -33,7 +33,7 @@ router.get('/google', (req, res) => {
 });
 
 // OAuth callback ruta
-router.get('/google/callback', async (req, res) => {
+router.get('/callback', async (req, res) => {
   const { code } = req.query;
 
   try {
@@ -51,15 +51,21 @@ router.get('/google/callback', async (req, res) => {
     console.log('✅ Google OAuth uspješan! Kalendar je povezan.');
 
     // Preusmjeri na frontend sa uspješnom porukom
-    res.redirect('http://localhost:3000/admin?googleAuth=success');
+    const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL 
+      : 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/admin?googleAuth=success`);
   } catch (error) {
     console.error('❌ Greška pri Google OAuth:', error);
-    res.redirect('http://localhost:3000/admin?googleAuth=error');
+    const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL 
+      : 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/admin?googleAuth=error`);
   }
 });
 
 // Provjeri status autentifikacije
-router.get('/google/status', (req, res) => {
+router.get('/status', (req, res) => {
   const isAuthenticated = calendarService.isAuthenticated() && storedTokens !== null;
   res.json({ 
     authenticated: isAuthenticated,
@@ -68,7 +74,7 @@ router.get('/google/status', (req, res) => {
 });
 
 // Odspoji Google Calendar
-router.post('/google/disconnect', (req, res) => {
+router.post('/disconnect', (req, res) => {
   storedTokens = null;
   calendarService.setAuthClient(null);
   console.log('✅ Google Calendar odspojen');
