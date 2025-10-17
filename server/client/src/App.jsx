@@ -31,6 +31,8 @@ function App() {
     notes: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Provjeri da li je admin već prijavljen (iz localStorage)
   useEffect(() => {
@@ -149,7 +151,10 @@ const handleSubmit = async (e) => {
 
     if (response.ok) {
       const savedAppointment = await response.json();
-      alert('Termin je uspješno rezerviran!');
+      
+      // Prikaži success modal
+      setSuccessMessage(`Vaš termin je uspješno rezerviran za ${formatDate(date)} u ${selectedTime}!`);
+      setShowSuccessModal(true);
       
       // Reset form
       setFormData({ 
@@ -166,11 +171,13 @@ const handleSubmit = async (e) => {
       console.log('✅ Termin spremljen:', savedAppointment);
     } else {
       const error = await response.json();
-      alert(`Greška: ${error.message}`);
+      setSuccessMessage(`Greška: ${error.message}`);
+      setShowSuccessModal(true);
     }
   } catch (error) {
     console.error('❌ Error creating appointment:', error);
-    alert('Došlo je do greške pri rezervaciji.');
+    setSuccessMessage('Došlo je do greške pri rezervaciji. Pokušajte ponovo.');
+    setShowSuccessModal(true);
   } finally {
     setIsLoading(false);
   }
@@ -288,7 +295,7 @@ const handleSubmit = async (e) => {
             >
               {services.map(service => (
                 <option key={service._id} value={service._id}>
-                  {service.name} - {service.duration}min - {service.price}€
+                  {service.name} - {service.duration}min - {service.price} KM
                 </option>
               ))}
             </select>
@@ -373,6 +380,25 @@ const handleSubmit = async (e) => {
           </form>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-icon">
+              <span className="success-checkmark">✓</span>
+            </div>
+            <h2 className="modal-title">Uspješno!</h2>
+            <p className="modal-message">{successMessage}</p>
+            <button 
+              className="modal-btn" 
+              onClick={() => setShowSuccessModal(false)}
+            >
+              U redu
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

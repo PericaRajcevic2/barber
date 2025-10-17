@@ -145,7 +145,7 @@ const ServicesManagement = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Cijena (€):</label>
+                  <label>Cijena (KM):</label>
                   <input
                     type="number"
                     value={formData.price}
@@ -202,7 +202,7 @@ const ServicesManagement = () => {
             
             <div className="item-details">
               <p><strong>Trajanje:</strong> {service.duration} minuta</p>
-              <p><strong>Cijena:</strong> {service.price}€</p>
+              <p><strong>Cijena:</strong> {service.price} KM</p>
               {service.description && <p><strong>Opis:</strong> {service.description}</p>}
             </div>
 

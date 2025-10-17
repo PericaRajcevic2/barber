@@ -32,33 +32,38 @@ const AdminLogin = ({ onLogin, onCancel }) => {
   };
 
   return (
-    <div className="admin-login">
-      <div className="login-container">
-        <h2>Admin Prijava</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
+    <div className="admin-login-container">
+      <div className="admin-login-box">
+        <div className="admin-login-header">
+          <h2>💈 Admin Prijava</h2>
+          <p>Dobrodošli u administraciju</p>
+        </div>
+        <form onSubmit={handleSubmit} className="admin-login-form">
+          <div className="admin-form-group">
             <label>Korisničko ime:</label>
             <input
               type="text"
+              placeholder="Unesite korisničko ime"
               value={credentials.username}
               onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
               required
             />
           </div>
-          <div className="form-group">
+          <div className="admin-form-group">
             <label>Lozinka:</label>
             <input
               type="password"
+              placeholder="Unesite lozinku"
               value={credentials.password}
               onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
               required
             />
           </div>
-          {error && <div className="error-message">{error}</div>}
+          {error && <div className="login-error">{error}</div>}
           <div className="login-actions">
-            <button type="submit" className="btn-primary">Prijavi se</button>
+            <button type="submit" className="login-btn-primary">Prijavi se</button>
             {onCancel && (
-              <button type="button" onClick={onCancel} className="btn-secondary">Natrag</button>
+              <button type="button" onClick={onCancel} className="login-btn-secondary">Natrag</button>
             )}
           </div>
         </form>

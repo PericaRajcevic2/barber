@@ -153,7 +153,7 @@ const AppointmentsManagement = () => {
             <div className="appointment-details">
               <p><strong>Usluga:</strong> {appointment.service?.name || '(nepoznato)'}</p>
               <p><strong>Trajanje:</strong> {appointment.service?.duration ? `${appointment.service.duration} min` : '(nepoznato)'}</p>
-              <p><strong>Cijena:</strong> {appointment.service?.price ? `${appointment.service.price}€` : '(nepoznato)'}</p>
+              <p><strong>Cijena:</strong> {appointment.service?.price ? `${appointment.service.price} KM` : '(nepoznato)'}</p>
               <p><strong>Kontakt:</strong> {appointment.customerEmail} | {appointment.customerPhone}</p>
               {appointment.notes && (
                 <p><strong>Napomene:</strong> {appointment.notes}</p>

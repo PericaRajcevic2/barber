@@ -11,7 +11,7 @@ const GoogleCalendarSettings = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('/api/auth/google/status');
+  const response = await fetch('/api/google/google/status');
       const data = await response.json();
       setAuthStatus(data.authenticated ? 'authenticated' : 'not_authenticated');
     } catch (error) {
@@ -23,7 +23,7 @@ const GoogleCalendarSettings = () => {
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/google');
+  const response = await fetch('/api/google/google');
       const data = await response.json();
       
       // Otvori Google OAuth prozor
@@ -38,7 +38,7 @@ const GoogleCalendarSettings = () => {
 
   const handleDisconnect = async () => {
     try {
-      const response = await fetch('/api/auth/google/disconnect', {
+  const response = await fetch('/api/google/google/disconnect', {
         method: 'POST'
       });
       const data = await response.json();

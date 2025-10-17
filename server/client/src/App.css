@@ -1,3 +1,11 @@
+.calendar-tile-disabled {
+  background: #f3f3f3 !important;
+  color: #bdbdbd !important;
+  border: 1px solid #e0e0e0 !important;
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+  text-decoration: line-through !important;
+}
 /* Enable smooth scrolling globally */
 html {
   scroll-behavior: smooth;
@@ -267,7 +275,10 @@ html {
 
 /* Month view weekdays */
 .react-calendar__month-view__weekdays {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 0.85rem;
 }
 
 /* Selected date */
@@ -412,7 +423,7 @@ html {
 @media (max-width: 968px) {
   .booking-container {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: 20px;
   }
   
   .calendar-section {
@@ -420,44 +431,147 @@ html {
   }
   
   .app-header h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 }
 
 @media (max-width: 768px) {
   .App {
-    padding: 15px;
+    padding: 10px;
   }
   
   .app-header {
-    padding: 20px;
+    padding: 16px 12px !important;
   }
   
   .app-header h1 {
-    font-size: 1.8rem;
+    font-size: 1.5rem !important;
+  }
+  
+  .app-header p {
+    font-size: 0.9rem !important;
   }
   
   .calendar-section,
   .booking-form {
-    padding: 20px;
+    padding: 16px !important;
+  }
+  
+  .calendar-section h2,
+  .booking-form h2 {
+    font-size: 0.95rem !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .section-label {
+    font-size: 0.9rem !important;
   }
   
   .slots-grid {
     grid-template-columns: repeat(4, 1fr);
+    gap: 8px !important;
+  }
+  
+  .time-slot {
+    padding: 10px 6px !important;
+    font-size: 13px !important;
+  }
+  
+  .selected-date {
+    padding: 12px !important;
+    font-size: 0.95rem !important;
+  }
+  
+  .form-input,
+  .form-textarea {
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+  }
+  
+  .submit-btn {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
   }
 }
 
 @media (max-width: 480px) {
-  .slots-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .App {
+    padding: 8px;
+  }
+  
+  .app-header {
+    padding: 14px 10px !important;
   }
   
   .app-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.3rem !important;
+    letter-spacing: 1px !important;
   }
   
   .app-header p {
-    font-size: 1rem;
+    font-size: 0.85rem !important;
+  }
+  
+  .calendar-section,
+  .booking-form {
+    padding: 14px !important;
+  }
+  
+  .calendar-section h2,
+  .booking-form h2 {
+    font-size: 0.85rem !important;
+  }
+  
+  .section-label {
+    font-size: 0.85rem !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .slots-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px !important;
+  }
+  
+  .time-slot {
+    padding: 8px 4px !important;
+    font-size: 12px !important;
+  }
+  
+  .selected-date {
+    padding: 10px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .form-grid {
+    gap: 10px !important;
+  }
+  
+  .form-input,
+  .form-textarea {
+    padding: 10px !important;
+    font-size: 13px !important;
+  }
+  
+  .submit-btn {
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+    letter-spacing: 1px !important;
+  }
+  
+  /* Calendar adjustments for small screens */
+  .react-calendar__tile {
+    padding: 6px 4px !important;
+    min-height: 36px !important;
+    font-size: 13px !important;
+  }
+  
+  .react-calendar__navigation button {
+    padding: 6px 8px !important;
+    font-size: 13px !important;
+  }
+  
+  .react-calendar__month-view__weekdays {
+    font-size: 0.75rem !important;
   }
 }
 
@@ -586,9 +700,10 @@ body {
 
 /* selected date card */
 .selected-date {
-  background: rgba(255,255,255,0.02);
-  color: var(--muted);
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(135deg, var(--accent-3), #6B2A2A);
+  color: var(--cream);
+  border: 2px solid var(--accent);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 
 /* Style for neighbor month tiles that we disabled */
 .react-calendar__tile--neighboringMonth {
@@ -716,39 +831,81 @@ a:focus, .time-slot:focus, .submit-btn:focus, .form-input:focus {
   outline-offset: 3px;
 }
 
-/* ======= STRONG THEME FIXES — PASTE AT END OF YOUR CSS ======= */
+/* ======= BARBER SHOP THEME — Warm Brown & Gold ======= */
 :root{
-  --bg:#060607;
-  --panel:#0f0f11;
-  --panel-2:#141416;
-  --accent:#ff9f1c;
-  --accent-2:#f39c12;
+  --bg:#3B2520;
+  --panel:#4A2C2A;
+  --panel-2:#5A3835;
+  --accent:#F5B33C;
+  --accent-2:#E8A531;
+  --accent-3:#8B3A3A;
   --muted:rgba(255,255,255,0.85);
   --muted-2:rgba(255,255,255,0.55);
+  --cream:#F5E6D3;
 }
 
 /* Ensure page overall dark background (higher specificity) */
 html, body {
-  background: var(--bg) !important;
-  color: var(--muted);
+  background: linear-gradient(135deg, var(--bg) 0%, #2A1810 100%) !important;
+  color: var(--cream);
+  min-height: 100vh;
 }
 
 /* Make the whole app look like a centered phone card on narrow screens */
 @media (max-width: 1100px) {
   .App {
     max-width: 420px !important;
-    margin: 20px auto !important;
-    padding: 18px !important;
-    border-radius: 34px !important;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)) !important;
-    box-shadow: 0 30px 80px rgba(2,6,23,0.8) !important;
-    border: 1px solid rgba(255,255,255,0.03) !important;
+    margin: 15px auto !important;
+    padding: 0 !important;
+    border-radius: 20px !important;
+    background: linear-gradient(180deg, var(--panel), var(--bg)) !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+    border: 3px solid var(--accent-3) !important;
+    overflow: hidden;
   }
 
   /* Single column layout on mobile */
   .booking-container {
     grid-template-columns: 1fr !important;
-    gap: 22px !important;
+    gap: 30px !important;
+  }
+  
+  .app-header {
+    margin-bottom: 20px !important;
+  }
+  
+  .calendar-section {
+    margin-bottom: 25px !important;
+  }
+}
+
+/* Extra optimizations for very small phones */
+@media (max-width: 380px) {
+  .App {
+    max-width: 100% !important;
+    margin: 10px !important;
+    border-radius: 16px !important;
+  }
+  
+  .app-header h1 {
+    font-size: 1.2rem !important;
+  }
+  
+  .calendar-section,
+  .booking-form {
+    padding: 12px !important;
+  }
+  
+  .booking-container {
+    gap: 25px !important;
+  }
+  
+  .calendar-section {
+    margin-bottom: 20px !important;
+  }
+  
+  .section-label {
+    font-size: 0.8rem !important;
   }
 }
 
@@ -771,38 +928,59 @@ html, body {
   }
 }
 
-/* Header: force dark look and orange accent */
+/* Header: Barber shop style with gold accent */
 .App .app-header,
 .app-header {
-  background: transparent !important;
-  color: var(--muted) !important;
-  padding: 18px 6px !important;
-  text-align: left !important;
-  box-shadow: none !important;
+  background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%) !important;
+  color: var(--cream) !important;
+  padding: 24px 18px !important;
+  text-align: center !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+  border-bottom: 3px solid var(--accent) !important;
+  border-radius: 0 !important;
 }
 
 .app-header h1 {
   color: var(--accent) !important;
   font-weight: 800 !important;
-  font-size: 1.5rem !important;
-  margin: 0 !important;
-  display: inline-block;
-  vertical-align: middle;
-  letter-spacing: 0.4px;
+  font-size: 2rem !important;
+  margin: 0 0 8px 0 !important;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 /* small subtitle under header (if present) */
-.app-header p { color: var(--muted-2) !important; margin-top: 6px !important; font-size: 0.95rem !important; }
+.app-header p { 
+  color: var(--cream) !important; 
+  margin-top: 6px !important; 
+  font-size: 1rem !important;
+  opacity: 0.9;
+}
 
 /* Panels: calendar and booking form */
 .calendar-section,
 .booking-form {
   background: linear-gradient(180deg, var(--panel), var(--panel-2)) !important;
-  border-radius: 18px !important;
-  box-shadow: 0 18px 40px rgba(2,6,23,0.75) !important;
-  border: 1px solid rgba(255,255,255,0.03) !important;
-  padding: 18px !important;
-  color: var(--muted) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4) !important;
+  border: 2px solid var(--accent-3) !important;
+  padding: 24px !important;
+  color: var(--cream) !important;
+  position: relative;
+}
+
+.calendar-section::before,
+.booking-form::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 12px 12px 0 0;
 }
 
 /* Make calendar take reasonable width and center it */
@@ -818,37 +996,54 @@ html, body {
 
 /* Make react calendar tiles readable on dark */
 .react-calendar__tile {
-  background: transparent !important;
-  color: var(--muted) !important;
+  background: rgba(245, 230, 211, 0.05) !important;
+  color: var(--cream) !important;
   border-radius: 8px !important;
-  border: 1px solid rgba(255,255,255,0.03) !important;
-  padding: 6px !important;
-  min-height: 36px !important;
+  border: 1px solid var(--accent-3) !important;
+  padding: 8px !important;
+  min-height: 40px !important;
   box-shadow: none !important;
+  font-weight: 600;
 }
 
 /* Today's/active tile accent */
 .react-calendar__tile--active,
 .react-calendar__tile--now {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
-  color: #0b0b0b !important;
-  border: 1px solid rgba(255,159,28,0.95) !important;
-  box-shadow: 0 8px 22px rgba(249,147,31,0.14) !important;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+  color: var(--panel) !important;
+  border: 2px solid var(--accent-2) !important;
+  box-shadow: 0 4px 15px rgba(245, 179, 60, 0.3) !important;
 }
 
 /* Hover effect for tiles */
 .react-calendar__tile:enabled:hover,
 .react-calendar__tile:enabled:focus {
-  background: rgba(255,159,28,0.06) !important;
-  color: #fff !important;
+  background: rgba(245, 179, 60, 0.15) !important;
+  border-color: var(--accent) !important;
+  transform: scale(1.05);
 }
 
 /* If calendar nav arrows or header are hidden or small, ensure visibility */
+.react-calendar__navigation {
+  display: flex !important;
+  gap: 8px !important;
+  margin-bottom: 12px !important;
+}
+
 .react-calendar__navigation button {
-  background: transparent !important;
-  color: var(--muted) !important;
-  border: none !important;
-  padding: 6px 8px !important;
+  background: rgba(245, 179, 60, 0.1) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-3) !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+  transition: all 0.2s ease;
+  margin: 0 !important;
+}
+
+.react-calendar__navigation button:hover {
+  background: var(--accent) !important;
+  color: var(--panel) !important;
 }
 
 /* Booking form layout: full width inputs on mobile */
@@ -868,70 +1063,80 @@ html, body {
 .form-textarea,
 select {
   width: 100% !important;
-  background: rgba(255,255,255,0.02) !important;
-  border: 1px solid rgba(255,255,255,0.06) !important;
-  color: var(--muted) !important;
-  padding: 12px !important;
-  border-radius: 12px !important;
-  box-shadow: none !important;
+  background: rgba(245, 230, 211, 0.05) !important;
+  border: 2px solid var(--accent-3) !important;
+  color: var(--cream) !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
 }
 
 /* focus */
 .service-select:focus,
 .form-input:focus,
 .form-textarea:focus {
-  border-color: rgba(255,159,28,0.95) !important;
-  box-shadow: 0 10px 30px rgba(255,159,28,0.06) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(245, 179, 60, 0.2) !important;
   outline: none !important;
+  background: rgba(245, 230, 211, 0.08) !important;
 }
 
 /* Time slots grid: make them evenly spaced and visible */
 .slots-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)) !important;
-  gap: 10px !important;
+  gap: 12px !important;
 }
 
 .time-slot {
-  background: rgba(255,255,255,0.02) !important;
-  color: var(--muted) !important;
-  border: 1px solid rgba(255,255,255,0.04) !important;
-  padding: 10px 8px !important;
-  border-radius: 10px !important;
+  background: rgba(245, 230, 211, 0.05) !important;
+  color: var(--cream) !important;
+  border: 2px solid var(--accent-3) !important;
+  padding: 12px 8px !important;
+  border-radius: 8px !important;
   font-weight: 700 !important;
   text-align: center !important;
   cursor: pointer !important;
+  transition: all 0.3s ease !important;
 }
 
 /* selected and hover */
 .time-slot:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 10px 30px rgba(2,6,23,0.6) !important;
-  background: linear-gradient(180deg, rgba(255,159,28,0.06), rgba(0,0,0,0.03)) !important;
-  color: #fff !important;
-  border-color: rgba(255,159,28,0.25) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(245, 179, 60, 0.3) !important;
+  background: rgba(245, 179, 60, 0.1) !important;
+  border-color: var(--accent) !important;
 }
 
 .time-slot.selected,
 .time-slot:active {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
-  color: #0b0b0b !important;
-  border-color: rgba(255,159,28,0.95) !important;
-  box-shadow: 0 8px 30px rgba(255,159,28,0.12) !important;
-  transform: translateY(-4px) !important;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+  color: var(--panel) !important;
+  border-color: var(--accent-2) !important;
+  box-shadow: 0 6px 20px rgba(245, 179, 60, 0.4) !important;
+  transform: translateY(-2px) !important;
 }
 
-/* Submit button: visible orange pill and full width */
+/* Submit button: visible gold button with full width */
 .submit-btn {
   display: block !important;
   width: 100% !important;
-  border-radius: 999px !important;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
-  color: #0b0b0b !important;
-  padding: 14px 18px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+  color: var(--panel) !important;
+  padding: 16px 18px !important;
   font-weight: 800 !important;
-  box-shadow: 0 12px 30px rgba(243,156,18,0.16) !important;
-  border: none !important;
+  box-shadow: 0 6px 20px rgba(245, 179, 60, 0.3) !important;
+  border: 2px solid var(--accent-2) !important;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  transition: all 0.3s ease !important;
+}
+
+.submit-btn:hover:not(.disabled) {
+  background: linear-gradient(135deg, var(--accent-2), var(--accent)) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(245, 179, 60, 0.4) !important;
 }
 
 /* Disabled submit */
@@ -943,8 +1148,11 @@ select {
 
 /* small text, labels and icons */
 .section-label, .booking-form h2, .calendar-section h2 {
-  color: var(--muted) !important;
+  color: var(--accent) !important;
   font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 1.1rem !important;
 }
 
 /* Blocked date styles */
@@ -1190,4 +1398,159 @@ select.service-select {
 }
 
 /* ako želiš nešto malo veće, promijeni "gap: 8px" u 10px ili 12px */
+
+/* ========== SUCCESS MODAL ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: linear-gradient(180deg, #4A2C2A, #5A3835);
+  border: 3px solid #8B3A3A;
+  border-radius: 16px;
+  padding: 40px 30px;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  position: relative;
+  animation: slideUp 0.4s ease;
+}
+
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #F5B33C, #E8A531);
+  border-radius: 16px 16px 0 0;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-icon {
+  margin-bottom: 20px;
+}
+
+.success-checkmark {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  background: linear-gradient(135deg, #F5B33C, #E8A531);
+  border-radius: 50%;
+  font-size: 48px;
+  color: #4A2C2A;
+  font-weight: bold;
+  box-shadow: 0 8px 25px rgba(245, 179, 60, 0.4);
+  animation: checkmarkPop 0.6s ease;
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.modal-title {
+  color: #F5B33C;
+  font-size: 2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.modal-message {
+  color: #F5E6D3;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  opacity: 0.95;
+}
+
+.modal-btn {
+  padding: 14px 40px;
+  background: linear-gradient(135deg, #F5B33C, #E8A531);
+  color: #4A2C2A;
+  border: 2px solid #E8A531;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(245, 179, 60, 0.3);
+}
+
+.modal-btn:hover {
+  background: linear-gradient(135deg, #E8A531, #F5B33C);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(245, 179, 60, 0.4);
+}
+
+.modal-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive modal */
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 30px 20px;
+  }
+  
+  .modal-title {
+    font-size: 1.5rem;
+  }
+  
+  .modal-message {
+    font-size: 1rem;
+  }
+  
+  .success-checkmark {
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    font-size: 36px;
+  }
+}
 

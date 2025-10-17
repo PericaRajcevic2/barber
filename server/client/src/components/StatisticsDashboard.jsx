@@ -83,7 +83,7 @@ const StatisticsDashboard = () => {
           <div className="stat-icon">💰</div>
           <div className="stat-info">
             <h3>Ukupni prihod</h3>
-            <div className="stat-value">{stats.revenue}€</div>
+            <div className="stat-value">{stats.revenue} KM</div>
           </div>
         </div>
 
@@ -93,8 +93,8 @@ const StatisticsDashboard = () => {
             <h3>Prosječno po narudžbi</h3>
             <div className="stat-value">
               {stats.totalAppointments > 0 
-                ? `${(stats.revenue / stats.totalAppointments).toFixed(2)}€`
-                : '0€'
+                ? `${(stats.revenue / stats.totalAppointments).toFixed(2)} KM`
+                : '0 KM'
               }
             </div>
           </div>
@@ -111,7 +111,7 @@ const StatisticsDashboard = () => {
                 <div className="service-name">{service.name}</div>
                 <div className="service-count">{service.count} narudžbi</div>
               </div>
-              <div className="service-revenue">{service.revenue}€</div>
+              <div className="service-revenue">{service.revenue} KM</div>
             </div>
           ))}
         </div>

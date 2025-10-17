@@ -67,7 +67,7 @@ const AdminDashboard = ({ user, onLogout }) => {
     <div className="admin-dashboard">
       <header className="admin-header">
         <div className="admin-header-content">
-          <h1>Admin Panel - Barber Shop</h1>
+          <h1>Admin Panel - Frizerski salon Jimmy</h1>
           <div className="admin-user">
             <span>Prijavljeni ste kao: <strong>{user?.name}</strong></span>
             {newAppointments > 0 && (
