@@ -67,11 +67,7 @@ const AdminLogin = ({ onLogin, onCancel }) => {
             )}
           </div>
         </form>
-        <div className="login-info">
-          <p><strong>Testni podaci:</strong></p>
-          <p>Korisničko ime: <code>admin</code></p>
-          <p>Lozinka: <code>admin123</code></p>
-        </div>
+
       </div>
     </div>
   );
