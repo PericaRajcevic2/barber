@@ -73,13 +73,34 @@ app.get('/api/health', (req, res) => {
 
 // Serve static files from React app in production
 if (process.env.NODE_ENV === 'production') {
-  // Serve static files
-  app.use(express.static(path.join(__dirname, 'client/dist')));
+  const distPath = path.join(__dirname, 'client/dist');
+  const indexPath = path.join(distPath, 'index.html');
   
-  // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/dist/index.html'));
-  });
+  // Check if build exists
+  const fs = require('fs');
+  if (fs.existsSync(indexPath)) {
+    console.log('✅ Serving React app from:', distPath);
+    
+    // Serve static files
+    app.use(express.static(distPath));
+    
+    // Handle React routing, return all requests to React app
+    app.get('*', (req, res) => {
+      res.sendFile(indexPath);
+    });
+  } else {
+    console.warn('⚠️  Frontend build not found at:', distPath);
+    console.warn('⚠️  Run "npm run build" to build the frontend');
+    
+    // Fallback route
+    app.get('*', (req, res) => {
+      res.json({ 
+        error: 'Frontend not built',
+        message: 'Please run: npm run build',
+        api_available: true 
+      });
+    });
+  }
 }
 
 const PORT = process.env.PORT || 5000;

@@ -25,10 +25,10 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 
-# Build folders
-dist/
+# Build folders (uncomment if you want to commit built frontend for Render)
+# dist/
 build/
-.client/dist/
+# server/client/dist/
 
 # IDE files
 .vscode/
