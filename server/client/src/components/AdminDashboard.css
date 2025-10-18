@@ -1,6 +1,50 @@
 .admin-dashboard {
   min-height: 100vh;
   background-color: #f5f5f5;
+  position: relative;
+}
+
+/* Floating Back Button */
+.floating-back-button {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.floating-back-button svg {
+  transition: transform 0.2s ease;
+}
+
+.floating-back-button:hover {
+  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.7);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.floating-back-button:hover svg {
+  transform: translateX(-3px);
+}
+
+.floating-back-button:active {
+  transform: scale(0.9);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.floating-back-button:focus {
+  outline: none;
 }
 
 .admin-header {
@@ -51,7 +95,7 @@
 .btn-logout {
   background: rgba(255,255,255,0.2);
   color: white;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(255,255,255,0.3);
   padding: 8px 16px;
   border-radius: 5px;
   cursor: pointer;
@@ -131,5 +175,18 @@
     flex: 1;
     text-align: center;
     min-width: 120px;
+  }
+
+  .floating-back-button {
+    bottom: 20px;
+    left: 20px;
+    width: 55px;
+    height: 55px;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+  
+  .floating-back-button svg {
+    width: 28px;
+    height: 28px;
   }
 }
