@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import AppointmentsManagement from './AppointmentsManagement';
+import CalendarView from './CalendarView';
 import ServicesManagement from './ServicesManagement';
 import WorkingHoursManagement from './WorkingHoursManagement';
 import BlockedDatesManagement from './BlockedDatesManagement';
@@ -78,6 +79,7 @@ const AdminDashboard = ({ user, onLogout }) => {
 
   const tabs = [
     { id: 'statistics', label: '📈 Statistika', component: StatisticsDashboard },
+    { id: 'calendar', label: '🗓️ Kalendar', component: CalendarView },
     { id: 'appointments', label: '📋 Narudžbe', component: AppointmentsManagement },
     { id: 'services', label: '✂️ Usluge', component: ServicesManagement },
     { id: 'working-hours', label: '⏰ Radno Vrijeme', component: WorkingHoursManagement },
