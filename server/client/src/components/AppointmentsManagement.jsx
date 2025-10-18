@@ -172,21 +172,22 @@ const AppointmentsManagement = () => {
                   <option value="cancelled">Otkaži</option>
                   <option value="completed">Završeno</option>
                 </select>
+              </div>
+              
+              <div className="action-buttons-row">
                 <button
                   className="btn-edit"
-                  style={{marginLeft: '8px'}}
                   onClick={() => updateAppointmentStatus(appointment._id, selectedStatuses[appointment._id] ?? appointment.status ?? 'pending')}
                 >
                   Ažuriraj
                 </button>
+                <button
+                  onClick={() => deleteAppointment(appointment._id)}
+                  className="btn-delete"
+                >
+                  Obriši
+                </button>
               </div>
-              
-              <button
-                onClick={() => deleteAppointment(appointment._id)}
-                className="btn-delete"
-              >
-                Obriši
-              </button>
             </div>
           </div>
         ))}

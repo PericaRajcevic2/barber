@@ -8,6 +8,33 @@ const CalendarView = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('week'); // 'day' ili 'week'
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [mobileStartDate, setMobileStartDate] = useState(new Date());
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  // Minimalna udaljenost za swipe
+  const minSwipeDistance = 50;
+
+  // Provjeri je li mobile
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Generiraj dane za mobile view (3 dana)
+  const getMobileDays = (startDate) => {
+    const days = [];
+    for (let i = 0; i < 3; i++) {
+      const day = new Date(startDate);
+      day.setDate(startDate.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
 
   // Generiraj dani u tjednu
   const getWeekDays = (date) => {
@@ -30,7 +57,11 @@ const CalendarView = () => {
     return [new Date(date)];
   };
 
-  const displayDays = viewMode === 'week' ? getWeekDays(currentWeek) : getDayView(currentWeek);
+  const displayDays = isMobile 
+    ? getMobileDays(mobileStartDate)
+    : viewMode === 'week' 
+      ? getWeekDays(currentWeek) 
+      : getDayView(currentWeek);
   const dayNames = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
   const monthNames = [
     'Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj',
@@ -47,12 +78,39 @@ const CalendarView = () => {
   }
 
   useEffect(() => {
-    if (viewMode === 'week') {
+    if (isMobile) {
+      fetchMobileAppointments();
+    } else if (viewMode === 'week') {
       fetchWeekAppointments();
     } else {
       fetchDayAppointments();
     }
-  }, [currentWeek, viewMode]);
+  }, [currentWeek, viewMode, isMobile, mobileStartDate]);
+
+  const fetchMobileAppointments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const mobileDays = getMobileDays(mobileStartDate);
+      const startDate = mobileDays[0].toISOString().split('T')[0];
+      const endDate = mobileDays[2].toISOString().split('T')[0];
+      
+      const response = await fetch(`/api/appointments/week?start=${startDate}&end=${endDate}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Greška pri dohvaćanju narudžbi');
+      }
+      
+      setAppointments(data);
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchWeekAppointments = async () => {
     try {
@@ -103,17 +161,49 @@ const CalendarView = () => {
   };
 
   const navigateWeek = (direction) => {
-    const newDate = new Date(currentWeek);
-    if (viewMode === 'week') {
-      newDate.setDate(newDate.getDate() + (direction * 7));
-    } else {
+    if (isMobile) {
+      const newDate = new Date(mobileStartDate);
       newDate.setDate(newDate.getDate() + direction);
+      setMobileStartDate(newDate);
+    } else {
+      const newDate = new Date(currentWeek);
+      if (viewMode === 'week') {
+        newDate.setDate(newDate.getDate() + (direction * 7));
+      } else {
+        newDate.setDate(newDate.getDate() + direction);
+      }
+      setCurrentWeek(newDate);
     }
-    setCurrentWeek(newDate);
   };
 
   const goToToday = () => {
-    setCurrentWeek(new Date());
+    const today = new Date();
+    setCurrentWeek(today);
+    setMobileStartDate(today);
+  };
+
+  // Touch handling za mobile swipe
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      navigateWeek(1); // Sljedeći dan
+    } else if (isRightSwipe) {
+      navigateWeek(-1); // Prethodnji dan
+    }
   };
 
   const getAppointmentsForDay = (date) => {
@@ -132,11 +222,14 @@ const CalendarView = () => {
     // Pozicija u odnosu na početak radnog vremena (8:00)
     const startHour = 8;
     const totalMinutes = (hour - startHour) * 60 + minutes;
-    const top = (totalMinutes / 30) * 30; // 30px po 30-minutnom slotu
+    
+    // Različite visine za mobile i desktop
+    const slotHeight = isMobile ? 50 : 40;
+    const top = (totalMinutes / 30) * slotHeight;
     
     // Visina na temelju trajanja usluge
     const duration = appointment.service?.duration || 60;
-    const height = (duration / 30) * 30; // 30px po 30-minutnom slotu
+    const height = Math.min((duration / 30) * slotHeight, slotHeight * 2); // Maksimalno 2 slota visine
     
     return { top, height };
   };
@@ -225,26 +318,30 @@ const CalendarView = () => {
             ›
           </button>
           <div className="current-period">
-            {viewMode === 'week' 
-              ? `${monthNames[currentWeek.getMonth()]} ${currentWeek.getFullYear()}`
-              : `${currentWeek.getDate()}. ${monthNames[currentWeek.getMonth()]} ${currentWeek.getFullYear()}`
+            {isMobile 
+              ? `${displayDays[0].getDate()}. - ${displayDays[2].getDate()}. ${monthNames[displayDays[0].getMonth()]} ${displayDays[0].getFullYear()}`
+              : viewMode === 'week' 
+                ? `${monthNames[currentWeek.getMonth()]} ${currentWeek.getFullYear()}`
+                : `${currentWeek.getDate()}. ${monthNames[currentWeek.getMonth()]} ${currentWeek.getFullYear()}`
             }
           </div>
         </div>
-        <div className="view-toggles">
-          <button 
-            className={`view-btn ${viewMode === 'day' ? 'active' : ''}`}
-            onClick={() => setViewMode('day')}
-          >
-            DAN
-          </button>
-          <button 
-            className={`view-btn ${viewMode === 'week' ? 'active' : ''}`}
-            onClick={() => setViewMode('week')}
-          >
-            TJEDAN
-          </button>
-        </div>
+        {!isMobile && (
+          <div className="view-toggles">
+            <button 
+              className={`view-btn ${viewMode === 'day' ? 'active' : ''}`}
+              onClick={() => setViewMode('day')}
+            >
+              DAN
+            </button>
+            <button 
+              className={`view-btn ${viewMode === 'week' ? 'active' : ''}`}
+              onClick={() => setViewMode('week')}
+            >
+              TJEDAN
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="calendar-container">
@@ -252,15 +349,17 @@ const CalendarView = () => {
         <div className={`calendar-content ${selectedAppointment ? 'with-sidebar' : ''}`}>
           {/* Header s datumima */}
           <div 
-            className="calendar-dates-header"
+            className={`calendar-dates-header ${isMobile ? 'mobile-view' : viewMode === 'day' ? 'day-view' : ''}`}
             style={{
-              gridTemplateColumns: `80px repeat(${displayDays.length}, 1fr)`
+              gridTemplateColumns: `${isMobile ? '60px' : '80px'} repeat(${displayDays.length}, 1fr)`
             }}
           >
             <div className="time-column-header"></div>
             {displayDays.map((date, index) => {
               const isToday = date.toDateString() === new Date().toDateString();
-              const dayName = viewMode === 'week' ? dayNames[index] : dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
+              const dayName = isMobile || viewMode === 'week' 
+                ? dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1]
+                : dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
               return (
                 <div key={index} className={`date-column-header ${isToday ? 'today' : ''}`}>
                   <div className="day-name">{dayName}</div>
@@ -272,10 +371,13 @@ const CalendarView = () => {
 
           {/* Kalendar grid */}
           <div 
-            className="calendar-grid"
+            className={`calendar-grid ${isMobile ? 'mobile-view' : viewMode === 'day' ? 'day-view' : ''}`}
             style={{
-              gridTemplateColumns: `80px repeat(${displayDays.length}, 1fr)`
+              gridTemplateColumns: `${isMobile ? '60px' : '80px'} repeat(${displayDays.length}, 1fr)`
             }}
+            onTouchStart={isMobile ? onTouchStart : undefined}
+            onTouchMove={isMobile ? onTouchMove : undefined}
+            onTouchEnd={isMobile ? onTouchEnd : undefined}
           >
             {/* Vremenska kolona */}
             <div className="time-column">
@@ -412,12 +514,20 @@ const CalendarView = () => {
                 >
                   Označi završeno
                 </button>
-                <button 
-                  className="btn-danger"
-                  onClick={() => deleteAppointment(selectedAppointment._id)}
-                >
-                  Obriši narudžbu
-                </button>
+                <div className="bottom-buttons">
+                  <button 
+                    className="btn-secondary btn-update"
+                    onClick={() => updateAppointmentStatus(selectedAppointment._id, selectedAppointment.status)}
+                  >
+                    Ažuriraj
+                  </button>
+                  <button 
+                    className="btn-danger"
+                    onClick={() => deleteAppointment(selectedAppointment._id)}
+                  >
+                    Obriši
+                  </button>
+                </div>
               </div>
             </div>
           </div>

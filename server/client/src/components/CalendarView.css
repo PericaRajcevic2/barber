@@ -136,7 +136,6 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  flex: 1;
   overflow-y: auto;
   max-height: 60vh;
 }
@@ -147,16 +146,16 @@
 }
 
 .calendar-view .time-slot {
-  height: 30px;
-  padding: 2px 5px;
+  height: 40px;
+  padding: 5px;
   font-size: 11px;
-  color: #000;
   color: #000 !important;
   border: none !important;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  font-weight: 500;
 }
 
 .day-column {
@@ -166,20 +165,26 @@
 }
 
 .hour-slot {
-  height: 50px;
+  height: 40px;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
 .appointment-block {
   position: absolute;
-  left: 2px;
-  right: 2px;
-  border-radius: 4px;
+  left: 4px;
+  right: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   overflow: hidden;
   z-index: 5;
+  border-left: 4px solid #2196F3;
+  min-height: 35px;
 }
 
 .appointment-block:hover {
@@ -212,6 +217,8 @@
   background: rgba(255, 255, 255, 0.8); /* Dodaj pozadinu da se bolje vidi */
   padding: 2px 4px;
   border-radius: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .appointment-time {
@@ -335,6 +342,8 @@
 
 .status-section {
   margin-bottom: 25px;
+  padding: 0;
+  border: none;
 }
 
 .status-section label {
@@ -367,6 +376,19 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.bottom-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.bottom-buttons button {
+  flex: 1;
+}
+
+.btn-update {
+  background: #2196F3 !important;
 }
 
 .btn-primary, .btn-secondary, .btn-danger {
@@ -525,35 +547,87 @@
   }
   
   .calendar-dates-header {
-    grid-template-columns: 50px repeat(7, 1fr);
+    grid-template-columns: 60px repeat(3, 1fr);
     font-size: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .calendar-dates-header::-webkit-scrollbar {
+    display: none;
   }
   
   .calendar-grid {
-    grid-template-columns: 50px repeat(7, 1fr);
+    grid-template-columns: 60px repeat(3, 1fr);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .calendar-grid::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .date-column-header {
+    min-width: 100px;
+    scroll-snap-align: start;
+  }
+  
+  .day-column {
+    min-width: 100px;
+    scroll-snap-align: start;
   }
   
   .calendar-view .time-slot {
     font-size: 9px;
-    padding: 1px 3px;
+    padding: 4px 1px;
     text-align: center;
     justify-content: center;
     align-items: center;
-    height: 25px;
+    height: 50px;
+    line-height: 1.0;
+    font-weight: 600;
+    width: 60px;
+  }
+  
+  .hour-slot {
+    height: 50px;
   }
   
   .appointment-content {
-    padding: 4px;
+    padding: 6px;
     font-size: 11px;
+    overflow: hidden;
   }
   
   .service-name {
     font-size: 10px;
-    line-height: 1.1;
+    line-height: 1.2;
+    margin-bottom: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
   
   .appointment-time {
-    display: none; /* Sakrij vrijeme na mobilnom */
+    display: block !important;
+    font-size: 9px;
+    color: #666;
+    margin-top: 3px;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .appointment-block {
+    min-height: 45px;
+    left: 2px;
+    right: 2px;
   }
   
   .calendar-container {
@@ -566,7 +640,7 @@
   
   .appointment-sidebar {
     width: 100%;
-    height: 50vh;
+    height: 60vh;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -575,6 +649,72 @@
     border-left: none;
     border-top: 1px solid #e0e0e0;
     animation: slideInUp 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .sidebar-content {
+    padding: 15px;
+    height: calc(100% - 60px);
+    overflow-y: auto;
+  }
+  
+  .appointment-details h4 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .customer-info {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .appointment-datetime {
+    font-size: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .contact-info, .service-info {
+    margin-bottom: 15px;
+  }
+  
+  .contact-info p, .service-info p {
+    font-size: 12px;
+    margin: 3px 0;
+  }
+  
+  .notes {
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 12px;
+  }
+  
+  .status-section {
+    margin-bottom: 15px;
+    padding: 0;
+    border: none;
+  }
+  
+  .status-section label {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+  
+  .action-buttons {
+    gap: 8px;
+  }
+  
+  .bottom-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .bottom-buttons button {
+    flex: 1;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-danger {
+    padding: 10px;
+    font-size: 12px;
   }
   
   @keyframes slideInUp {
