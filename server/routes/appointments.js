@@ -26,6 +26,45 @@ router.use((req, res, next) => {
   next();
 });
 
+// GET /api/appointments/week - Dohvati narudžbe za tjedan
+router.get('/week', async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    
+    if (!start || !end) {
+      return res.status(400).json({ message: 'Potrebni su start i end parametri' });
+    }
+    
+    // Tretiraj incoming YYYY-MM-DD kao LOKALNI datum
+    const [startY, startM, startD] = start.split('-').map(Number);
+    const [endY, endM, endD] = end.split('-').map(Number);
+    
+    const startDate = new Date(startY, startM - 1, startD, 0, 0, 0, 0);
+    const endDate = new Date(endY, endM - 1, endD, 23, 59, 59, 999);
+
+    console.log(`📅 GET appointments za tjedan: ${start} - ${end}`);
+    console.log(`🕐 Lokalni raspon: ${startDate.toString()} - ${endDate.toString()}`);
+
+    const filter = {
+      date: {
+        $gte: startDate,
+        $lt: new Date(endDate.getTime() + 1)
+      }
+    };
+    
+    const appointments = await Appointment.find(filter)
+      .populate('service')
+      .sort({ date: 1 });
+    
+    console.log(`✅ Pronađeno ${appointments.length} narudžbi za tjedan`);
+    
+    res.json(appointments);
+  } catch (error) {
+    console.error('❌ Greška pri dohvaćanju narudžbi za tjedan:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // GET /api/appointments - Dohvati sve narudžbe (s mogućnošću filtriranja)
 router.get('/', async (req, res) => {
   try {

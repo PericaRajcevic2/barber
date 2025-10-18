@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
+import CalendarView from './CalendarView';
 import AppointmentsManagement from './AppointmentsManagement';
 import ServicesManagement from './ServicesManagement';
 import WorkingHoursManagement from './WorkingHoursManagement';
@@ -9,7 +10,7 @@ import GoogleCalendarSettings from './GoogleCalendarSettings';
 import './AdminDashboard.css';
 
 const AdminDashboard = ({ user, onLogout }) => {
-  const [activeTab, setActiveTab] = useState('statistics');
+  const [activeTab, setActiveTab] = useState('calendar');
   const [newAppointments, setNewAppointments] = useState(0);
   const [socket, setSocket] = useState(null);
 
@@ -54,11 +55,12 @@ const AdminDashboard = ({ user, onLogout }) => {
 
   const tabs = [
     { id: 'statistics', label: '📈 Statistika', component: StatisticsDashboard },
+    { id: 'calendar', label: '📅 Kalendar', component: CalendarView },
     { id: 'appointments', label: '📋 Narudžbe', component: AppointmentsManagement },
     { id: 'services', label: '✂️ Usluge', component: ServicesManagement },
     { id: 'working-hours', label: '⏰ Radno Vrijeme', component: WorkingHoursManagement },
     { id: 'blocked-dates', label: '🚫 Blokirani Dani', component: BlockedDatesManagement },
-    { id: 'google-calendar', label: '📅 Google Calendar', component: GoogleCalendarSettings },
+    { id: 'google-calendar', label: '� Google Calendar', component: GoogleCalendarSettings },
   ];
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;

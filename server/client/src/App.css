@@ -109,7 +109,7 @@ html {
 .service-select {
   width: 100%;
   padding: 15px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid #e0e0e0;
   border-radius: 10px;
   font-size: 16px;
   transition: all 0.3s;
@@ -189,7 +189,7 @@ html {
 .form-textarea {
   width: 100%;
   padding: 15px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid #e0e0e0;
   border-radius: 10px;
   font-size: 16px;
   transition: all 0.3s;
@@ -345,7 +345,7 @@ html {
 .react-calendar__tile {
   padding: 14px 10px !important;
   position: relative;
-  border: 1px solid #e6e6e6 !important;
+  border: 1px solid #e0e0e0 !important;
   margin: 1px !important;
   border-radius: 6px !important;
   background: white !important;
@@ -354,7 +354,7 @@ html {
 
 .react-calendar__tile:enabled:hover {
   background: #f0f0f0 !important;
-  border-color: #d0d0d0 !important;
+  border-color: #e0e0e0 !important;
   transform: translateY(-1px) !important;
 }
 
@@ -589,7 +589,7 @@ html {
 .loading-spinner-small {
   width: 30px;
   height: 30px;
-  border: 3px solid #f3f3f3;
+  border: 3px solid #e0e0e0;
   border-top: 3px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;

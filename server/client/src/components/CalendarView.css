@@ -1,0 +1,588 @@
+/* Calendar View Styles */
+.calendar-view {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f5f5;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.calendar-navigation {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #f5f5f5;
+}
+
+.today-btn {
+  background: #2196F3;
+  color: white;
+  border-color: #2196F3;
+}
+
+.today-btn:hover {
+  background: #1976D2;
+}
+
+.current-period {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.view-toggles {
+  display: flex;
+  gap: 5px;
+}
+
+.view-btn {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.view-btn.active {
+  background: #2196F3;
+  color: white;
+  border-color: #2196F3;
+}
+
+.calendar-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  max-height: 70vh;
+}
+
+.calendar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.calendar-content.with-sidebar {
+  flex: 0 0 70%;
+}
+
+.calendar-dates-header {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Day view adjustments */
+.calendar-view .calendar-dates-header.day-view {
+  grid-template-columns: 80px 1fr;
+}
+
+.calendar-view .calendar-grid.day-view {
+  grid-template-columns: 80px 1fr;
+}
+
+.calendar-view .time-column-header {
+  padding: 15px 10px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.date-column-header {
+  padding: 15px 10px;
+  text-align: center;
+  border-right: 1px solid #e0e0e0;
+}
+
+.day-name {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.day-number {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  flex: 1;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.calendar-view .time-column {
+  background: #fafafa;
+  border-right: 1px solid #e0e0e0;
+}
+
+.calendar-view .time-slot {
+  height: 30px;
+  padding: 2px 5px;
+  font-size: 11px;
+  color: #000;
+  color: #000 !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.day-column {
+  position: relative;
+  background: white;
+  border-right: 1px solid #e0e0e0;
+}
+
+.hour-slot {
+  height: 50px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.appointment-block {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+  z-index: 5;
+}
+
+.appointment-block:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
+}
+
+.appointment-block.selected {
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+  z-index: 10;
+}
+
+.appointment-content {
+  padding: 8px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.service-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: #333 !important;
+  margin-bottom: 3px;
+  line-height: 1.2;
+  word-wrap: break-word;
+  display: block !important;
+  background: rgba(255, 255, 255, 0.8); /* Dodaj pozadinu da se bolje vidi */
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.appointment-time {
+  display: none; /* Sakrij vrijeme jer se pozicija vidi na kalendaru */
+}
+
+.status-icon {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  color: #4CAF50;
+  font-size: 12px;
+}
+
+/* Bočni panel */
+.appointment-sidebar {
+  width: 30%;
+  background: white;
+  border-left: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.sidebar-content {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.appointment-details h4 {
+  margin: 0 0 15px 0;
+  color: #2196F3;
+  font-size: 20px;
+}
+
+.customer-info {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.appointment-datetime {
+  color: #666;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.contact-info, .service-info {
+  margin-bottom: 20px;
+}
+
+.contact-info p, .service-info p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.notes {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.notes strong {
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.notes p {
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.status-section {
+  margin-bottom: 25px;
+}
+
+.status-section label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.appointment-sidebar .status-select,
+.calendar-view .status-select {
+  width: 100% !important;
+  padding: 8px 10px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  background: white !important;
+  color: #000 !important;
+  height: auto !important;
+  min-height: auto !important;
+  line-height: normal !important;
+}
+
+.status-select option {
+  color: #000 !important;
+  background: white !important;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-primary, .btn-secondary, .btn-danger {
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.btn-primary {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.btn-secondary {
+  background: #2196F3;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #1976D2;
+}
+
+.btn-danger {
+  background: #f44336;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+}
+
+.btn-primary:disabled, .btn-secondary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  z-index: 1000;
+}
+
+.error-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #f44336;
+  color: white;
+  padding: 15px;
+  border-radius: 6px;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease;
+}
+
+/* Današnji dan označavanje */
+.date-column-header.today {
+  background: #e3f2fd;
+  font-weight: 600;
+}
+
+.date-column-header.today .day-number {
+  color: #1976D2;
+}
+
+/* Dodatne boje za različite usluge */
+.appointment-block.service-sisanje {
+  background: #E8F4FD !important;
+  border-left-color: #2196F3;
+}
+
+.appointment-block.service-pranje {
+  background: #FFF2E8 !important;
+  border-left-color: #FF9800;
+}
+
+.appointment-block.service-brijanje {
+  background: #E8F8F0 !important;
+  border-left-color: #4CAF50;
+}
+
+.appointment-block.service-oblikovanje {
+  background: #F0E8FF !important;
+  border-left-color: #9C27B0;
+}
+
+/* Status indikatori */
+.appointment-block.status-confirmed {
+  border-left-width: 6px;
+}
+
+.appointment-block.status-cancelled {
+  opacity: 0.6;
+  background: #ffebee !important;
+  border-left-color: #f44336 !important;
+}
+
+.appointment-block.status-completed {
+  border-left-color: #4CAF50 !important;
+  background: #e8f5e8 !important;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .calendar-content.with-sidebar {
+    flex: 0 0 60%;
+  }
+  
+  .appointment-sidebar {
+    width: 40%;
+  }
+  
+  .calendar-dates-header {
+    grid-template-columns: 60px repeat(7, 1fr);
+  }
+  
+  .calendar-grid {
+    grid-template-columns: 60px repeat(7, 1fr);
+  }
+  
+  .calendar-view .time-column-header,
+  .calendar-view .time-column {
+    width: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .calendar-navigation {
+    justify-content: center;
+  }
+  
+  .current-period {
+    font-size: 16px;
+  }
+  
+  .calendar-dates-header {
+    grid-template-columns: 50px repeat(7, 1fr);
+    font-size: 12px;
+  }
+  
+  .calendar-grid {
+    grid-template-columns: 50px repeat(7, 1fr);
+  }
+  
+  .calendar-view .time-slot {
+    font-size: 9px;
+    padding: 1px 3px;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    height: 25px;
+  }
+  
+  .appointment-content {
+    padding: 4px;
+    font-size: 11px;
+  }
+  
+  .service-name {
+    font-size: 10px;
+    line-height: 1.1;
+  }
+  
+  .appointment-time {
+    display: none; /* Sakrij vrijeme na mobilnom */
+  }
+  
+  .calendar-container {
+    flex-direction: column;
+  }
+  
+  .calendar-content.with-sidebar {
+    flex: 1;
+  }
+  
+  .appointment-sidebar {
+    width: 100%;
+    height: 50vh;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+    animation: slideInUp 0.3s ease;
+  }
+  
+  @keyframes slideInUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
