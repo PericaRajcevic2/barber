@@ -65,6 +65,43 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/appointments/week - Dohvati narudžbe za tjedan
+router.get('/week', async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    
+    if (!start || !end) {
+      return res.status(400).json({ message: 'Start i end datumi su obavezni' });
+    }
+
+    // Parse start i end datume (YYYY-MM-DD format)
+    const [startY, startM, startD] = start.split('-').map(Number);
+    const [endY, endM, endD] = end.split('-').map(Number);
+    
+    const startDate = new Date(startY, startM - 1, startD, 0, 0, 0, 0);
+    const endDate = new Date(endY, endM - 1, endD, 23, 59, 59, 999);
+
+    console.log(`📅 GET appointments za tjedan: ${start} - ${end}`);
+    console.log(`🕐 Lokalni raspon: ${startDate.toString()} - ${endDate.toString()}`);
+
+    const appointments = await Appointment.find({
+      date: {
+        $gte: startDate,
+        $lt: new Date(endDate.getTime() + 1)
+      }
+    })
+    .populate('service')
+    .sort({ date: 1 });
+    
+    console.log(`✅ Pronađeno ${appointments.length} narudžbi za tjedan`);
+    
+    res.json(appointments);
+  } catch (error) {
+    console.error('❌ Greška pri dohvaćanju narudžbi za tjedan:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // POST /api/appointments - Kreiraj novu narudžbu
 router.post('/', async (req, res) => {
   try {
