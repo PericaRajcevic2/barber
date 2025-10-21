@@ -50,9 +50,28 @@ exports.sendAppointmentConfirmation = async (appointment) => {
           <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p style="margin: 0; color: #856404;">
               <strong>ℹ️ Važno:</strong> Molimo vas da dođete točno na vrijeme. 
-              Ako želite otkazati ili promijeniti termin, kontaktirajte nas najmanje 2 sata unaprijed.
+              Ako želite otkazati termin, koristite dugme ispod (najmanje 2 sata unaprijed).
             </p>
           </div>
+
+          ${appointment.cancellationToken ? `
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${process.env.APP_URL || 'http://localhost:5000'}/cancel/${appointment.cancellationToken}" 
+               style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); 
+                      color: white; 
+                      padding: 14px 32px; 
+                      text-decoration: none; 
+                      border-radius: 8px; 
+                      display: inline-block; 
+                      font-weight: bold;
+                      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);">
+               ❌ Otkaži termin
+            </a>
+            <p style="color: #666; font-size: 12px; margin-top: 10px;">
+              Link za otkazivanje važi do termina
+            </p>
+          </div>
+          ` : ''}
 
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
             <p style="color: #666; margin-bottom: 5px;">

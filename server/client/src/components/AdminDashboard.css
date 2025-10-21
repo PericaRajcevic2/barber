@@ -1,6 +1,6 @@
 .admin-dashboard {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: #f5f6fa;
   position: relative;
 }
 
@@ -9,19 +9,19 @@
   position: fixed;
   bottom: 30px;
   left: 30px;
-  width: 65px;
-  height: 65px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #7B68EE 0%, #9b7fd9 100%);
   color: white;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: none;
   cursor: pointer;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 8px 20px rgba(123, 104, 238, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
 }
 
@@ -30,17 +30,16 @@
 }
 
 .floating-back-button:hover {
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.7);
-  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(123, 104, 238, 0.45);
 }
 
 .floating-back-button:hover svg {
-  transform: translateX(-3px);
+  transform: translateX(-2px);
 }
 
 .floating-back-button:active {
-  transform: scale(0.9);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transform: scale(0.95);
 }
 
 .floating-back-button:focus {
@@ -48,111 +47,150 @@
 }
 
 .admin-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: white;
+  color: #2c3e50;
   padding: 20px 0;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-bottom: 1px solid #e8e9f0;
 }
 
 .admin-header-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 20px;
 }
 
 .admin-header h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-header h1::before {
+  content: '💈';
+  font-size: 1.8rem;
 }
 
 .admin-user {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
+}
+
+.admin-user span {
+  color: #5a6c7d;
+  font-size: 0.95rem;
+}
+
+.admin-user strong {
+  color: #2c3e50;
+  font-weight: 600;
 }
 
 .notification-badge {
-  background: #ff4757;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
   color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
   font-weight: 600;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
+  0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
 }
 
 .btn-logout {
-  background: rgba(255,255,255,0.2);
+  background: linear-gradient(135deg, #7B68EE 0%, #9b7fd9 100%);
   color: white;
-  border: 1px solid rgba(255,255,255,0.3);
-  padding: 8px 16px;
-  border-radius: 5px;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(123, 104, 238, 0.25);
 }
 
 .btn-logout:hover {
-  background: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(123, 104, 238, 0.35);
 }
 
 .admin-nav {
   background: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-bottom: 1px solid #e8e9f0;
 }
 
 .admin-nav-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 30px;
   display: flex;
   overflow-x: auto;
+  gap: 8px;
+}
+
+.admin-nav-content::-webkit-scrollbar {
+  height: 4px;
+}
+
+.admin-nav-content::-webkit-scrollbar-thumb {
+  background: #7B68EE;
+  border-radius: 4px;
 }
 
 .nav-tab {
   background: none;
   border: none;
-  padding: 15px 20px;
+  padding: 16px 24px;
   cursor: pointer;
-  font-size: 16px;
-  color: #555;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #5a6c7d;
   border-bottom: 3px solid transparent;
   transition: all 0.3s;
   white-space: nowrap;
+  position: relative;
 }
 
 .nav-tab:hover {
-  background: #f8f9fa;
-  color: #333;
+  color: #7B68EE;
+  background: rgba(123, 104, 238, 0.05);
 }
 
 .nav-tab.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
-  background: #f8f9fa;
+  color: #7B68EE;
+  border-bottom-color: #7B68EE;
+  background: rgba(123, 104, 238, 0.08);
 }
 
 .admin-main {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 30px;
 }
 
 .admin-main-content {
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   min-height: 500px;
+  padding: 0;
 }
 
 /* Responsive */
@@ -160,6 +198,11 @@
   .admin-header-content {
     flex-direction: column;
     text-align: center;
+    padding: 0 20px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.4rem;
   }
 
   .admin-user {
@@ -168,25 +211,28 @@
   }
 
   .admin-nav-content {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    padding: 0 20px;
   }
 
   .nav-tab {
-    flex: 1;
-    text-align: center;
-    min-width: 120px;
+    padding: 14px 18px;
+    font-size: 0.85rem;
+  }
+
+  .admin-main {
+    padding: 20px 16px;
   }
 
   .floating-back-button {
     bottom: 20px;
     left: 20px;
-    width: 55px;
-    height: 55px;
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    width: 52px;
+    height: 52px;
   }
   
   .floating-back-button svg {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
   }
 }

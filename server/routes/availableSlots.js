@@ -91,25 +91,38 @@ router.get('/', async (req, res) => {
     console.log(`🕒 Zauzeti termini:`, bookedSlots);
     console.log(`✅ Dostupni termini:`, timeSlots.filter(slot => !bookedSlots.includes(slot)));
 
-    const availableSlots = timeSlots.filter(slot => !bookedSlots.includes(slot));
-    // Ako je odabrani datum danas (lokalno), izbaci termine koji su već prošli
+    // Provjeri koji termini su prošli ako je danas
     const now = new Date();
     const monthIndex = m - 1;
     const isToday = startOfDay.getFullYear() === now.getFullYear() &&
                     startOfDay.getMonth() === now.getMonth() &&
                     startOfDay.getDate() === now.getDate();
 
-    let filteredAvailableSlots = availableSlots;
-    if (isToday) {
-      filteredAvailableSlots = availableSlots.filter(slot => {
-        const [hh, mm] = slot.split(':').map(Number);
-        const slotDate = new Date(y, monthIndex, d, hh, mm, 0, 0);
-        return slotDate.getTime() > now.getTime(); // dozvoli samo buduće termine
-      });
-      console.log(`⏱️ Filtrirano termine za danas, priješnjene su uklonjene. Preostalo:`, filteredAvailableSlots);
-    }
+    // Kreiraj objekte sa svim slotovima i njihovim statusom
+    const allSlotsWithStatus = timeSlots.map(slot => {
+      const [hh, mm] = slot.split(':').map(Number);
+      const slotDate = new Date(y, monthIndex, d, hh, mm, 0, 0);
+      
+      let status = 'available';
+      
+      // Provjeri je li termin prošao (samo za danas)
+      if (isToday && slotDate.getTime() <= now.getTime()) {
+        status = 'past';
+      }
+      // Provjeri je li termin zauzet
+      else if (bookedSlots.includes(slot)) {
+        status = 'booked';
+      }
+      
+      return {
+        time: slot,
+        status: status
+      };
+    });
+
+    console.log(`⏱️ Svi termini sa statusom:`, allSlotsWithStatus);
     
-    res.json(filteredAvailableSlots);
+    res.json(allSlotsWithStatus);
   } catch (error) {
     console.error('❌ Error fetching available slots:', error);
     res.status(500).json({ message: error.message });

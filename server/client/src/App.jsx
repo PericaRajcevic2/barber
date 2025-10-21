@@ -243,7 +243,7 @@ const handleSubmit = async (e) => {
       
       <div className="booking-container">
         <div className="calendar-section">
-          <h2>📅 Odaberite datum</h2>
+          <h2>Odaberite datum</h2>
           <CustomCalendar 
             value={date}
             onChange={setDate}
@@ -256,7 +256,7 @@ const handleSubmit = async (e) => {
         </div>
 
         <div className="booking-form">
-          <h2>✂️ Rezervirajte termin</h2>
+          <h2>Rezervirajte termin</h2>
           
           <div className="form-section" ref={serviceSectionRef}>
             <label className="section-label">1. Odaberite uslugu:</label>
@@ -290,20 +290,30 @@ const handleSubmit = async (e) => {
       </div>
     ) : (
       <div className="slots-grid">
-        {availableSlots.map(slot => (
-          <button 
-            key={slot}
-            type="button"
-            className={`time-slot ${selectedTime === slot ? 'selected' : ''}`}
-            onClick={() => {
-              setSelectedTime(slot);
-              // Scroll to customer form after selecting time
-              setTimeout(() => scrollToSection(customerFormRef), 100);
-            }}
-          >
-            {slot}
-          </button>
-        ))}
+        {availableSlots.map(slot => {
+          const slotTime = typeof slot === 'string' ? slot : slot.time;
+          const slotStatus = typeof slot === 'string' ? 'available' : slot.status;
+          const isDisabled = slotStatus === 'booked' || slotStatus === 'past';
+          
+          return (
+            <button 
+              key={slotTime}
+              type="button"
+              className={`time-slot ${selectedTime === slotTime ? 'selected' : ''} ${slotStatus}`}
+              onClick={() => {
+                if (!isDisabled) {
+                  setSelectedTime(slotTime);
+                  // Scroll to customer form after selecting time
+                  setTimeout(() => scrollToSection(customerFormRef), 100);
+                }
+              }}
+              disabled={isDisabled}
+            >
+              {slotTime}
+              {slotStatus === 'booked' && <span className="slot-indicator">Zauzeto</span>}
+            </button>
+          );
+        })}
       </div>
     )}
   </div>
@@ -350,7 +360,7 @@ const handleSubmit = async (e) => {
               disabled={!selectedTime || isLoading}
               className={`submit-btn ${(!selectedTime || isLoading) ? 'disabled' : ''}`}
             >
-              {isLoading ? 'Rezerviram...' : '✅ Rezerviraj termin'}
+              {isLoading ? 'Rezerviram...' : 'Rezerviraj termin'}
             </button>
           </form>
         </div>

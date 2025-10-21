@@ -109,7 +109,7 @@ html {
 .service-select {
   width: 100%;
   padding: 15px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #e1e5e9;
   border-radius: 10px;
   font-size: 16px;
   transition: all 0.3s;
@@ -153,6 +153,7 @@ html {
   font-size: 14px;
   font-weight: 600;
   color: #667eea;
+  position: relative;
 }
 
 .time-slot:hover {
@@ -166,6 +167,40 @@ html {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Zauzeti i prošli termini - grayed out stil */
+.time-slot.booked,
+.time-slot.past {
+  background: #f5f6fa;
+  border-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.time-slot.booked:hover,
+.time-slot.past:hover {
+  background: #f5f6fa;
+  color: #9ca3af;
+  transform: none;
+}
+
+.time-slot.booked {
+  position: relative;
+  padding-bottom: 22px;
+}
+
+.slot-indicator {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 600;
+  color: #ef4444;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .customer-form {
@@ -189,7 +224,7 @@ html {
 .form-textarea {
   width: 100%;
   padding: 15px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #e1e5e9;
   border-radius: 10px;
   font-size: 16px;
   transition: all 0.3s;
@@ -345,7 +380,7 @@ html {
 .react-calendar__tile {
   padding: 14px 10px !important;
   position: relative;
-  border: 1px solid #e0e0e0 !important;
+  border: 1px solid #e6e6e6 !important;
   margin: 1px !important;
   border-radius: 6px !important;
   background: white !important;
@@ -354,7 +389,7 @@ html {
 
 .react-calendar__tile:enabled:hover {
   background: #f0f0f0 !important;
-  border-color: #e0e0e0 !important;
+  border-color: #d0d0d0 !important;
   transform: translateY(-1px) !important;
 }
 
@@ -477,6 +512,15 @@ html {
     font-size: 13px !important;
   }
   
+  .time-slot.booked {
+    padding-bottom: 20px !important;
+  }
+  
+  .slot-indicator {
+    font-size: 8px !important;
+    bottom: 3px !important;
+  }
+  
   .selected-date {
     padding: 12px !important;
     font-size: 0.95rem !important;
@@ -537,6 +581,15 @@ html {
     font-size: 12px !important;
   }
   
+  .time-slot.booked {
+    padding-bottom: 18px !important;
+  }
+  
+  .slot-indicator {
+    font-size: 7px !important;
+    bottom: 2px !important;
+  }
+  
   .selected-date {
     padding: 10px !important;
     font-size: 0.85rem !important;
@@ -589,7 +642,7 @@ html {
 .loading-spinner-small {
   width: 30px;
   height: 30px;
-  border: 3px solid #e0e0e0;
+  border: 3px solid #f3f3f3;
   border-top: 3px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -969,6 +1022,14 @@ html, body {
   padding: 24px !important;
   color: var(--cream) !important;
   position: relative;
+  overflow: hidden;
+}
+
+/* Mobile calendar section */
+@media (max-width: 768px) {
+  .calendar-section {
+    padding: 16px 12px !important;
+  }
 }
 
 .calendar-section::before,
@@ -987,63 +1048,224 @@ html, body {
 .calendar-section .react-calendar,
 .react-calendar {
   width: 100% !important;
-  max-width: 360px !important;
-  margin: 6px auto 0 auto !important;
-  background: transparent !important;
-  color: var(--muted) !important;
-  border: none !important;
-}
-
-/* Make react calendar tiles readable on dark */
-.react-calendar__tile {
-  background: rgba(245, 230, 211, 0.05) !important;
+  max-width: 420px !important;
+  margin: 12px auto 0 auto !important;
+  background: rgba(30, 20, 15, 0.6) !important;
   color: var(--cream) !important;
-  border-radius: 8px !important;
-  border: 1px solid var(--accent-3) !important;
-  padding: 8px !important;
-  min-height: 40px !important;
-  box-shadow: none !important;
-  font-weight: 600;
+  border: none !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Today's/active tile accent */
-.react-calendar__tile--active,
+/* Calendar month grid */
+.react-calendar__month-view__weekdays {
+  text-align: center !important;
+  font-weight: 700 !important;
+  color: var(--cream) !important;
+  text-transform: uppercase !important;
+  font-size: 0.8rem !important;
+  margin-bottom: 12px !important;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  padding: 8px 0 !important;
+  color: var(--muted) !important;
+}
+
+.react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none !important;
+}
+
+/* Days grid - 7 columns */
+.react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 8px !important;
+}
+
+/* Make react calendar tiles readable on dark - circular style */
+.react-calendar__tile {
+  background: rgba(245, 230, 211, 0.08) !important;
+  color: var(--cream) !important;
+  border-radius: 50% !important;
+  border: 2px solid transparent !important;
+  padding: 0 !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  width: 48px !important;
+  max-width: 48px !important;
+  margin: 0 auto !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Today's tile - blue accent like in image */
 .react-calendar__tile--now {
+  background: rgba(100, 120, 200, 0.4) !important;
+  color: var(--cream) !important;
+  border-color: rgba(100, 120, 200, 0.6) !important;
+}
+
+/* Selected/active tile - gold accent */
+.react-calendar__tile--active {
   background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
   color: var(--panel) !important;
   border: 2px solid var(--accent-2) !important;
-  box-shadow: 0 4px 15px rgba(245, 179, 60, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(245, 179, 60, 0.4) !important;
+  font-weight: 800 !important;
 }
 
 /* Hover effect for tiles */
 .react-calendar__tile:enabled:hover,
 .react-calendar__tile:enabled:focus {
-  background: rgba(245, 179, 60, 0.15) !important;
+  background: rgba(245, 179, 60, 0.2) !important;
   border-color: var(--accent) !important;
-  transform: scale(1.05);
+  transform: scale(1.08) !important;
+  box-shadow: 0 4px 12px rgba(245, 179, 60, 0.3) !important;
+}
+
+/* Disabled/out of month tiles - faded */
+.react-calendar__tile:disabled,
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: var(--muted-2) !important;
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+}
+
+/* Blocked dates styling */
+.react-calendar__tile.blocked-date {
+  background: rgba(200, 50, 50, 0.15) !important;
+  color: var(--muted-2) !important;
+  text-decoration: line-through !important;
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+}
+
+/* Mobile responsive calendar */
+@media (max-width: 768px) {
+  .react-calendar {
+    max-width: 100% !important;
+    padding: 16px 12px !important;
+  }
+  
+  /* Days grid - proper spacing on mobile */
+  .react-calendar__month-view__days {
+    gap: 6px !important;
+  }
+  
+  .react-calendar__tile {
+    min-height: 40px !important;
+    max-height: 40px !important;
+    width: 40px !important;
+    max-width: 40px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .react-calendar__navigation {
+    padding: 10px 12px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .react-calendar__navigation__label {
+    font-size: 0.95rem !important;
+  }
+  
+  .react-calendar__navigation__arrow {
+    font-size: 1.1rem !important;
+  }
+  
+  .react-calendar__month-view__weekdays {
+    font-size: 0.7rem !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .react-calendar__month-view__weekdays__weekday {
+    padding: 6px 0 !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .react-calendar {
+    padding: 12px 8px !important;
+  }
+  
+  .react-calendar__month-view__days {
+    gap: 4px !important;
+  }
+  
+  .react-calendar__tile {
+    min-height: 36px !important;
+    max-height: 36px !important;
+    width: 36px !important;
+    max-width: 36px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .react-calendar__navigation {
+    padding: 8px !important;
+  }
+  
+  .react-calendar__navigation__label {
+    font-size: 0.9rem !important;
+  }
+  
+  .react-calendar__month-view__weekdays {
+    font-size: 0.65rem !important;
+  }
 }
 
 /* If calendar nav arrows or header are hidden or small, ensure visibility */
 .react-calendar__navigation {
   display: flex !important;
-  gap: 8px !important;
-  margin-bottom: 12px !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 20px !important;
+  background: rgba(245, 230, 211, 0.05) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
 }
 
 .react-calendar__navigation button {
-  background: rgba(245, 179, 60, 0.1) !important;
-  color: var(--accent) !important;
-  border: 1px solid var(--accent-3) !important;
+  background: transparent !important;
+  color: var(--cream) !important;
+  border: none !important;
   padding: 8px 12px !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   font-weight: 700 !important;
+  font-size: 1rem !important;
   transition: all 0.2s ease;
   margin: 0 !important;
+  min-width: auto !important;
 }
 
-.react-calendar__navigation button:hover {
-  background: var(--accent) !important;
-  color: var(--panel) !important;
+/* Month/year label in center */
+.react-calendar__navigation__label {
+  flex-grow: 1 !important;
+  text-align: center !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  color: var(--cream) !important;
+  pointer-events: none !important;
+}
+
+/* Arrow buttons */
+.react-calendar__navigation__arrow {
+  font-size: 1.3rem !important;
+  color: var(--cream) !important;
+  font-weight: 700 !important;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background: rgba(245, 179, 60, 0.2) !important;
+  color: var(--accent) !important;
 }
 
 /* Booking form layout: full width inputs on mobile */

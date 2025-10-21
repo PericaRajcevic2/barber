@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Appointment = require('../models/Appointment');
+const crypto = require('crypto');
 
 // Učitaj servise
 let emailService, smsService, calendarService;
@@ -24,45 +25,6 @@ try {
 router.use((req, res, next) => {
   req.io = req.app.get('io');
   next();
-});
-
-// GET /api/appointments/week - Dohvati narudžbe za tjedan
-router.get('/week', async (req, res) => {
-  try {
-    const { start, end } = req.query;
-    
-    if (!start || !end) {
-      return res.status(400).json({ message: 'Potrebni su start i end parametri' });
-    }
-    
-    // Tretiraj incoming YYYY-MM-DD kao LOKALNI datum
-    const [startY, startM, startD] = start.split('-').map(Number);
-    const [endY, endM, endD] = end.split('-').map(Number);
-    
-    const startDate = new Date(startY, startM - 1, startD, 0, 0, 0, 0);
-    const endDate = new Date(endY, endM - 1, endD, 23, 59, 59, 999);
-
-    console.log(`📅 GET appointments za tjedan: ${start} - ${end}`);
-    console.log(`🕐 Lokalni raspon: ${startDate.toString()} - ${endDate.toString()}`);
-
-    const filter = {
-      date: {
-        $gte: startDate,
-        $lt: new Date(endDate.getTime() + 1)
-      }
-    };
-    
-    const appointments = await Appointment.find(filter)
-      .populate('service')
-      .sort({ date: 1 });
-    
-    console.log(`✅ Pronađeno ${appointments.length} narudžbi za tjedan`);
-    
-    res.json(appointments);
-  } catch (error) {
-    console.error('❌ Greška pri dohvaćanju narudžbi za tjedan:', error);
-    res.status(500).json({ message: error.message });
-  }
 });
 
 // GET /api/appointments - Dohvati sve narudžbe (s mogućnošću filtriranja)
@@ -147,13 +109,17 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Termin je već zauzet' });
     }
     
+    // Generiši jedinstveni cancellation token
+    const cancellationToken = crypto.randomBytes(32).toString('hex');
+    
     const appointment = new Appointment({
       customerName,
       customerEmail,
       customerPhone,
       service,
       date: utcAppointmentTime, // Spremi kao UTC
-      notes
+      notes,
+      cancellationToken
     });
     
     const savedAppointment = await appointment.save();
@@ -309,6 +275,131 @@ router.put('/:id', async (req, res) => {
   } catch (error) {
     console.error('❌ Greška pri ažuriranju narudžbe:', error);
     res.status(400).json({ message: error.message });
+  }
+});
+
+// GET /api/appointments/cancel/:token - Prikaži detalje termina za otkazivanje (javni pristup)
+router.get('/cancel/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    
+    console.log(`🔍 Pregled termina sa tokenom: ${token}`);
+    
+    const appointment = await Appointment.findOne({ 
+      cancellationToken: token,
+      status: { $in: ['pending', 'confirmed'] }
+    }).populate('service');
+    
+    if (!appointment) {
+      return res.status(404).json({ 
+        message: 'Termin nije pronađen ili je već otkazan' 
+      });
+    }
+    
+    res.json(appointment);
+  } catch (error) {
+    console.error('❌ Greška pri dohvaćanju termina:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST /api/appointments/cancel/:token - Otkaži termin putem tokena (javni pristup)
+router.post('/cancel/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { reason } = req.body;
+    
+    console.log(`🔍 Pokušaj otkazivanja termina sa tokenom: ${token}`);
+    
+    // Pronađi termin sa ovim tokenom
+    const appointment = await Appointment.findOne({ 
+      cancellationToken: token,
+      status: { $in: ['pending', 'confirmed'] } // Samo aktivni termini mogu biti otkazani
+    }).populate('service');
+    
+    if (!appointment) {
+      console.log('❌ Termin nije pronađen ili je već otkazan');
+      return res.status(404).json({ 
+        message: 'Termin nije pronađen ili je već otkazan' 
+      });
+    }
+    
+    // Provjeri da li je termin u budućnosti (minimalno 2 sata unaprijed)
+    const now = new Date();
+    const appointmentDate = new Date(appointment.date);
+    const hoursDifference = (appointmentDate - now) / (1000 * 60 * 60);
+    
+    if (hoursDifference < 2) {
+      console.log('❌ Termin ne može biti otkazan manje od 2 sata prije početka');
+      return res.status(400).json({ 
+        message: 'Termin ne može biti otkazan manje od 2 sata prije početka' 
+      });
+    }
+    
+    // Ažuriraj status na cancelled
+    appointment.status = 'cancelled';
+    await appointment.save();
+    
+    console.log(`✅ Termin otkazan:`, {
+      id: appointment._id,
+      customer: appointment.customerName,
+      date: appointment.date.toISOString(),
+      reason: reason || 'Korisnik otkazao'
+    });
+    
+    // Obriši iz Google Calendara ako postoji
+    if (appointment.googleCalendarEventId && calendarService && calendarService.isAuthenticated()) {
+      try {
+        await calendarService.deleteAppointmentEvent(appointment.googleCalendarEventId);
+        console.log('✅ Termin obrisan iz Google Calendara');
+      } catch (calendarError) {
+        console.error('❌ Greška pri brisanju iz Google Calendara:', calendarError);
+      }
+    }
+    
+    // Pošalji email potvrdu otkazivanja
+    if (emailService && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      try {
+        await emailService.sendAppointmentCancellation(appointment, reason || 'Korisnik otkazao termin');
+        console.log('✅ Email potvrda otkazivanja poslana korisniku');
+      } catch (emailError) {
+        console.error('❌ Greška pri slanju emaila:', emailError);
+      }
+    }
+    
+    // Pošalji SMS potvrdu otkazivanja
+    if (smsService && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      try {
+        const smsResult = await smsService.sendAppointmentCancellation(appointment, reason);
+        if (smsResult.success) {
+          console.log('✅ SMS potvrda otkazivanja poslana korisniku');
+        }
+      } catch (smsError) {
+        console.error('❌ Greška pri slanju SMS-a:', smsError);
+      }
+    }
+    
+    // Obavijesti admina o otkazivanju
+    try {
+      const io = req.io;
+      if (io) {
+        io.to('admin_room').emit('appointment_cancelled', {
+          appointment,
+          reason: reason || 'Korisnik otkazao termin'
+        });
+        console.log('🔔 Admin obavijesten o otkazivanju');
+      }
+    } catch (socketError) {
+      console.error('❌ Greška pri slanju socket obavijesti:', socketError);
+    }
+    
+    res.json({ 
+      message: 'Termin uspješno otkazan',
+      appointment 
+    });
+  } catch (error) {
+    console.error('❌ Greška pri otkazivanju termina:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 

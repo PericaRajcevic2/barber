@@ -37,7 +37,12 @@ const appointmentSchema = new mongoose.Schema({
   googleCalendarEventId: {
     type: String,
     trim: true
-  },  
+  },
+  cancellationToken: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
