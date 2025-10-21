@@ -181,13 +181,21 @@ router.post('/', async (req, res) => {
     }
     
     // Pošalji EMAIL notifikacije
+    console.log('🔍 Provjeravam email uslove:', {
+      emailService: !!emailService,
+      EMAIL_USER: !!process.env.EMAIL_USER,
+      EMAIL_PASS: !!process.env.EMAIL_PASS
+    });
+    
     if (emailService && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       try {
+        console.log('📧 Pokušavam poslati emailove...');
         await emailService.sendAppointmentConfirmation(savedAppointment);
         await emailService.sendNewAppointmentNotification(savedAppointment);
         console.log('✅ Email notifikacije uspješno poslane');
       } catch (emailError) {
         console.error('❌ Greška pri slanju email notifikacija:', emailError);
+        console.error('Stack trace:', emailError.stack);
       }
     } else {
       console.log('ℹ️  Email notifikacije su isključene');

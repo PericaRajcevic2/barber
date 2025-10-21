@@ -21,6 +21,8 @@ transporter.verify((error, success) => {
 // 1. EMAIL POTVRDE ZA KLIJENTA
 exports.sendAppointmentConfirmation = async (appointment) => {
   try {
+    console.log('📧 Pokušavam poslati confirmation email na:', appointment.customerEmail);
+    
     const mailOptions = {
       from: `"Barber Shop" <${process.env.EMAIL_USER}>`,
       to: appointment.customerEmail,
@@ -91,7 +93,8 @@ exports.sendAppointmentConfirmation = async (appointment) => {
     console.log('✅ Email potvrde poslan korisniku:', appointment.customerEmail);
     return true;
   } catch (error) {
-    console.error('❌ Greška pri slanju emaila:', error);
+    console.error('❌ Greška pri slanju confirmation emaila:', error);
+    console.error('Error details:', error.message);
     return false;
   }
 };
@@ -99,6 +102,8 @@ exports.sendAppointmentConfirmation = async (appointment) => {
 // 2. EMAIL OBAVIJESTI ZA FRIZERA
 exports.sendNewAppointmentNotification = async (appointment) => {
   try {
+    console.log('📧 Pokušavam poslati notification email frizeru');
+    
     const mailOptions = {
       from: `"Barber Shop Notifications" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
@@ -156,7 +161,8 @@ exports.sendNewAppointmentNotification = async (appointment) => {
     console.log('✅ Obavijest o novoj narudžbi poslana frizeru');
     return true;
   } catch (error) {
-    console.error('❌ Greška pri slanju obavijesti frizeru:', error);
+    console.error('❌ Greška pri slanju notification emaila frizeru:', error);
+    console.error('Error details:', error.message);
     return false;
   }
 };
