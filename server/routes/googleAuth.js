@@ -51,16 +51,13 @@ router.get('/callback', async (req, res) => {
     console.log('✅ Google OAuth uspješan! Kalendar je povezan.');
 
     // Preusmjeri na frontend sa uspješnom porukom
-    const frontendUrl = process.env.NODE_ENV === 'production' 
-      ? process.env.FRONTEND_URL 
-      : 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/admin?googleAuth=success`);
+    const frontendUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'http://localhost:5000';
+    // Redirectaj na root sa query param da Admin panel može očitati status
+    res.redirect(`${frontendUrl}/?googleAuth=success`);
   } catch (error) {
     console.error('❌ Greška pri Google OAuth:', error);
-    const frontendUrl = process.env.NODE_ENV === 'production' 
-      ? process.env.FRONTEND_URL 
-      : 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/admin?googleAuth=error`);
+    const frontendUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'http://localhost:5000';
+    res.redirect(`${frontendUrl}/?googleAuth=error`);
   }
 });
 

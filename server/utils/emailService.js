@@ -1,22 +1,87 @@
 const nodemailer = require('nodemailer');
+const https = require('https');
 
-// Kreiraj transporter - ISPRAVLJENO: createTransport
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+// Odabir providera: preferiraj RESEND preko HTTPS (stabilno na Renderu), fallback na Gmail SMTP
+const USE_RESEND = Boolean(process.env.RESEND_API_KEY);
 
-// Testiraj email konfiguraciju
-transporter.verify((error, success) => {
-  if (error) {
-    console.log('❌ Email konfiguracija neuspješna:', error);
-  } else {
-    console.log('✅ Email server je spreman za slanje poruka');
+let transporter = null;
+if (!USE_RESEND) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  // Testiraj SMTP konfiguraciju samo ako ne koristimo Resend
+  transporter.verify((error, success) => {
+    if (error) {
+      console.log('❌ Email konfiguracija (SMTP) neuspješna:', error);
+    } else {
+      console.log('✅ SMTP email server je spreman za slanje poruka');
+    }
+  });
+} else {
+  console.log('✉️  Email slanje konfigurirano preko RESEND HTTP API (bez SMTP)');
+}
+
+function sendViaResend({ to, subject, html }) {
+  return new Promise((resolve) => {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) return resolve(false);
+    const from = process.env.EMAIL_FROM || 'Barber Shop <onboarding@resend.dev>';
+    const body = JSON.stringify({ from, to, subject, html });
+    const options = {
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.log('✅ Resend email poslan');
+          resolve(true);
+        } else {
+          console.error('❌ Resend greška:', data);
+          resolve(false);
+        }
+      });
+    });
+    req.on('error', (err) => {
+      console.error('❌ Resend greška (network):', err);
+      resolve(false);
+    });
+    req.write(body);
+    req.end();
+  });
+}
+
+async function sendEmail({ to, subject, html }) {
+  if (USE_RESEND) {
+    return await sendViaResend({ to, subject, html });
   }
-});
+  if (!transporter) return false;
+  try {
+    await transporter.sendMail({
+      from: `"Barber Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html
+    });
+    return true;
+  } catch (e) {
+    console.error('❌ SMTP slanje nije uspjelo:', e);
+    return false;
+  }
+}
 
 // 1. EMAIL POTVRDE ZA KLIJENTA
 exports.sendAppointmentConfirmation = async (appointment) => {
@@ -24,7 +89,6 @@ exports.sendAppointmentConfirmation = async (appointment) => {
     console.log('📧 Pokušavam poslati confirmation email na:', appointment.customerEmail);
     
     const mailOptions = {
-      from: `"Barber Shop" <${process.env.EMAIL_USER}>`,
       to: appointment.customerEmail,
       subject: 'Potvrda rezervacije termina - Barber Shop',
       html: `
@@ -89,9 +153,12 @@ exports.sendAppointmentConfirmation = async (appointment) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Email potvrde poslan korisniku:', appointment.customerEmail);
-    return true;
+    const ok = await sendEmail(mailOptions);
+    if (ok) {
+      console.log('✅ Email potvrde poslan korisniku:', appointment.customerEmail);
+      return true;
+    }
+    return false;
   } catch (error) {
     console.error('❌ Greška pri slanju confirmation emaila:', error);
     console.error('Error details:', error.message);
@@ -105,7 +172,6 @@ exports.sendNewAppointmentNotification = async (appointment) => {
     console.log('📧 Pokušavam poslati notification email frizeru');
     
     const mailOptions = {
-      from: `"Barber Shop Notifications" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
       subject: '📋 Nova narudžba - Barber Shop',
       html: `
@@ -144,7 +210,7 @@ exports.sendNewAppointmentNotification = async (appointment) => {
           </div>
 
           <div style="text-align: center; margin-top: 25px;">
-            <a href="http://localhost:3000" 
+            <a href="${process.env.APP_URL || 'http://localhost:5000'}" 
                style="background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
                🔍 Pogledaj u admin panelu
             </a>
@@ -157,9 +223,12 @@ exports.sendNewAppointmentNotification = async (appointment) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Obavijest o novoj narudžbi poslana frizeru');
-    return true;
+    const ok = await sendEmail(mailOptions);
+    if (ok) {
+      console.log('✅ Obavijest o novoj narudžbi poslana frizeru');
+      return true;
+    }
+    return false;
   } catch (error) {
     console.error('❌ Greška pri slanju notification emaila frizeru:', error);
     console.error('Error details:', error.message);
@@ -171,7 +240,6 @@ exports.sendNewAppointmentNotification = async (appointment) => {
 exports.sendAppointmentCancellation = async (appointment, reason = '') => {
   try {
     const mailOptions = {
-      from: `"Barber Shop" <${process.env.EMAIL_USER}>`,
       to: appointment.customerEmail,
       subject: 'Otkazivanje termina - Barber Shop',
       html: `
@@ -197,7 +265,7 @@ exports.sendAppointmentCancellation = async (appointment, reason = '') => {
           </div>
 
           <div style="text-align: center; margin-top: 25px;">
-            <a href="http://localhost:3000" 
+            <a href="${process.env.APP_URL || 'http://localhost:5000'}" 
                style="background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
                📅 Rezerviraj novi termin
             </a>
@@ -210,9 +278,12 @@ exports.sendAppointmentCancellation = async (appointment, reason = '') => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Email o otkazivanju termina poslan korisniku:', appointment.customerEmail);
-    return true;
+    const ok = await sendEmail(mailOptions);
+    if (ok) {
+      console.log('✅ Email o otkazivanju termina poslan korisniku:', appointment.customerEmail);
+      return true;
+    }
+    return false;
   } catch (error) {
     console.error('❌ Greška pri slanju emaila o otkazivanju:', error);
     return false;

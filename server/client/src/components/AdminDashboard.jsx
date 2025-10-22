@@ -40,7 +40,11 @@ const AdminDashboard = ({ user, onLogout }) => {
 
   useEffect(() => {
     // Spoji se na Socket.io server
-    const newSocket = io('http://localhost:5000');
+    // U produkciji koristimo trenutni origin (Render), u razvoju VITE_API_URL ili localhost:5000
+    const baseURL = import.meta.env.PROD
+      ? window.location.origin
+      : (import.meta.env.VITE_API_URL || 'http://localhost:5000');
+    const newSocket = io(baseURL);
     setSocket(newSocket);
     
     // Joinaj admin room

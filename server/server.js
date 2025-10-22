@@ -12,9 +12,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? process.env.FRONTEND_URL 
-      : "http://localhost:3000",
+    origin: process.env.NODE_ENV === 'production'
+      ? (process.env.APP_URL || process.env.FRONTEND_URL)
+      : (process.env.DEV_ORIGIN || 'http://localhost:5173'),
     methods: ["GET", "POST"]
   }
 });
