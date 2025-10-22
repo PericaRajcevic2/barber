@@ -201,8 +201,8 @@ router.post('/', async (req, res) => {
       console.log('ℹ️  Email notifikacije su isključene');
     }
     
-    // Pošalji SMS notifikacije
-    if (smsService && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  // Pošalji SMS/OTT notifikacije (WhatsApp Cloud API)
+  if (smsService && (smsService.isConfigured?.() || (process.env.WHATSAPP_TOKEN && process.env.WHATSAPP_PHONE_ID))) {
       try {
         const smsResult = await smsService.sendAppointmentConfirmation(savedAppointment);
         if (smsResult.success) {
@@ -302,8 +302,8 @@ router.put('/:id', async (req, res) => {
       }
     }
 
-    // Pošalji SMS ako je narudžba otkazana
-    if (status === 'cancelled' && smsService && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  // Pošalji SMS/OTT ako je narudžba otkazana
+  if (status === 'cancelled' && smsService && (smsService.isConfigured?.() || (process.env.WHATSAPP_TOKEN && process.env.WHATSAPP_PHONE_ID))) {
       try {
         const smsResult = await smsService.sendAppointmentCancellation(appointment, cancellationReason);
         if (smsResult.success) {

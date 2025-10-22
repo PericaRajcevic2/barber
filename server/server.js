@@ -62,6 +62,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/auth/google', require('./routes/googleAuth'));
 app.use('/api/setup', require('./routes/setup')); // Setup/seed endpoints
+app.use('/api/debug', require('./routes/debug')); // Guarded debug endpoints
 
 // Health check za API
 app.get('/api/health', (req, res) => {
