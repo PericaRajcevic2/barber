@@ -1,11 +1,17 @@
 const nodemailer = require('nodemailer');
-const https = require('https');
+const { Resend } = require('resend');
 
-// Odabir providera: preferiraj RESEND preko HTTPS (stabilno na Renderu), fallback na Gmail SMTP
+// Odabir providera: preferiraj RESEND (stabilno na Renderu), fallback na Gmail SMTP
 const USE_RESEND = Boolean(process.env.RESEND_API_KEY);
+let resend = null;
+
+if (USE_RESEND) {
+  resend = new Resend(process.env.RESEND_API_KEY);
+  console.log('✉️  Email slanje konfigurirano preko RESEND API (bez SMTP)');
+}
 
 let transporter = null;
-if (!USE_RESEND) {
+if (!USE_RESEND && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -17,58 +23,50 @@ if (!USE_RESEND) {
   // Testiraj SMTP konfiguraciju samo ako ne koristimo Resend
   transporter.verify((error, success) => {
     if (error) {
-      console.log('❌ Email konfiguracija (SMTP) neuspješna:', error);
+      console.log('❌ Email konfiguracija (SMTP) neuspješna:', error.message);
+      console.log('💡 TIP: Na Renderu koristi RESEND_API_KEY umjesto Gmail SMTP');
     } else {
       console.log('✅ SMTP email server je spreman za slanje poruka');
     }
   });
-} else {
-  console.log('✉️  Email slanje konfigurirano preko RESEND HTTP API (bez SMTP)');
+} else if (!USE_RESEND) {
+  console.log('ℹ️  Email slanje nije konfigurirano (nedostaju EMAIL_USER/EMAIL_PASS ili RESEND_API_KEY)');
 }
 
-function sendViaResend({ to, subject, html }) {
-  return new Promise((resolve) => {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) return resolve(false);
+async function sendViaResend({ to, subject, html }) {
+  try {
+    if (!resend) return false;
+    
     const from = process.env.EMAIL_FROM || 'Barber Shop <onboarding@resend.dev>';
-    const body = JSON.stringify({ from, to, subject, html });
-    const options = {
-      hostname: 'api.resend.com',
-      path: '/emails',
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
-    };
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          console.log('✅ Resend email poslan');
-          resolve(true);
-        } else {
-          console.error('❌ Resend greška:', data);
-          resolve(false);
-        }
-      });
+    
+    const { data, error } = await resend.emails.send({
+      from,
+      to,
+      subject,
+      html
     });
-    req.on('error', (err) => {
-      console.error('❌ Resend greška (network):', err);
-      resolve(false);
-    });
-    req.write(body);
-    req.end();
-  });
+
+    if (error) {
+      console.error('❌ Resend greška:', error);
+      return false;
+    }
+
+    console.log('✅ Resend email poslan:', data.id);
+    return true;
+  } catch (err) {
+    console.error('❌ Resend greška (network):', err);
+    return false;
+  }
 }
 
 async function sendEmail({ to, subject, html }) {
   if (USE_RESEND) {
     return await sendViaResend({ to, subject, html });
   }
-  if (!transporter) return false;
+  if (!transporter) {
+    console.log('ℹ️  Email slanje preskočeno - nije konfigurirano');
+    return false;
+  }
   try {
     await transporter.sendMail({
       from: `"Barber Shop" <${process.env.EMAIL_USER}>`,
@@ -76,9 +74,10 @@ async function sendEmail({ to, subject, html }) {
       subject,
       html
     });
+    console.log('✅ SMTP email poslan');
     return true;
   } catch (e) {
-    console.error('❌ SMTP slanje nije uspjelo:', e);
+    console.error('❌ SMTP slanje nije uspjelo:', e.message);
     return false;
   }
 }
