@@ -5,6 +5,9 @@ import CalendarView from './CalendarView';
 import ServicesManagement from './ServicesManagement';
 import WorkingHoursManagement from './WorkingHoursManagement';
 import BlockedDatesManagement from './BlockedDatesManagement';
+import BreakSlotsManagement from './BreakSlotsManagement';
+import ReviewsManagement from './ReviewsManagement';
+import NotificationsPanel from './NotificationsPanel';
 import StatisticsDashboard from './StatisticsDashboard';
 import GoogleCalendarSettings from './GoogleCalendarSettings';
 import './AdminDashboard.css';
@@ -13,6 +16,7 @@ const AdminDashboard = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('statistics');
   const [navigationHistory, setNavigationHistory] = useState(['statistics']);
   const [newAppointments, setNewAppointments] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [socket, setSocket] = useState(null);
 
   // Funkcija za promjenu taba koja pamti historiju
@@ -50,10 +54,12 @@ const AdminDashboard = ({ user, onLogout }) => {
     // Joinaj admin room
     newSocket.emit('join_admin');
     
-    // Slušaj nove narudžbe
+    // Slušaj notifikacije
     newSocket.on('new_appointment', (appointment) => {
       console.log('Nova narudžba primljena:', appointment);
       setNewAppointments(prev => prev + 1);
+      // refresh notif count
+      fetchUnread();
       
       // Prikaži browser notifikaciju
       if (Notification.permission === 'granted') {
@@ -69,6 +75,13 @@ const AdminDashboard = ({ user, onLogout }) => {
       }, 5000);
     });
 
+    newSocket.on('appointment_cancelled', () => {
+      fetchUnread();
+    });
+    newSocket.on('appointment_rescheduled', () => {
+      fetchUnread();
+    });
+
     return () => {
       newSocket.disconnect();
     };
@@ -81,14 +94,33 @@ const AdminDashboard = ({ user, onLogout }) => {
     }
   }, []);
 
+  // Fetch unread notifications count
+  const fetchUnread = async () => {
+    try {
+      const base = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${base}/api/notifications/unread-count`);
+      const json = await res.json();
+      setUnreadNotifications(json.count || 0);
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    fetchUnread();
+  }, []);
+
   const tabs = [
     { id: 'statistics', label: '📈 Statistika', component: StatisticsDashboard },
     { id: 'calendar', label: '🗓️ Kalendar', component: CalendarView },
     { id: 'appointments', label: '📋 Narudžbe', component: AppointmentsManagement },
     { id: 'services', label: '✂️ Usluge', component: ServicesManagement },
     { id: 'working-hours', label: '⏰ Radno Vrijeme', component: WorkingHoursManagement },
+    { id: 'break-slots', label: '☕ Pauze', component: BreakSlotsManagement },
     { id: 'blocked-dates', label: '🚫 Blokirani Dani', component: BlockedDatesManagement },
+    { id: 'reviews', label: '⭐ Recenzije', component: ReviewsManagement },
     { id: 'google-calendar', label: '📅 Google Calendar', component: GoogleCalendarSettings },
+    { id: 'notifications', label: `🔔 Notifikacije${unreadNotifications ? ' (' + unreadNotifications + ')' : ''}`, component: NotificationsPanel },
   ];
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;

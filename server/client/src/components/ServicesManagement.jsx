@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import './ManagementStyles.css';
+import LazyImage from './LazyImage';
+import './ManagementStyles.clean.css';
+import api from '../utils/api';
 
 const ServicesManagement = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingService, setEditingService] = useState(null);
+  const [draggingId, setDraggingId] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     duration: 30,
     price: 0,
     description: '',
+    image: 'https://images.unsplash.com/photo-1622287162716-277385e39a2f?w=800&auto=format&fit=crop',
     isActive: true
   });
 
@@ -20,8 +24,7 @@ const ServicesManagement = () => {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch('/api/admin/services');
-      const data = await response.json();
+  const { data } = await api.get('/api/admin/services');
       setServices(data);
     } catch (error) {
       console.error('Error fetching services:', error);
@@ -39,15 +42,9 @@ const ServicesManagement = () => {
       
       const method = editingService ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await api({ url, method, data: formData, headers: { 'Content-Type': 'application/json' }, retryOnPost: true });
 
-      if (response.ok) {
+      if (response.status >= 200 && response.status < 300) {
         fetchServices();
         resetForm();
       } else {
@@ -65,6 +62,7 @@ const ServicesManagement = () => {
       duration: service.duration,
       price: service.price,
       description: service.description,
+      image: service.image || 'https://images.unsplash.com/photo-1622287162716-277385e39a2f?w=800&auto=format&fit=crop',
       isActive: service.isActive
     });
     setShowForm(true);
@@ -73,11 +71,9 @@ const ServicesManagement = () => {
   const handleDelete = async (serviceId) => {
     if (window.confirm('Jeste li sigurni da želite obrisati ovu uslugu?')) {
       try {
-        const response = await fetch(`/api/admin/services/${serviceId}`, {
-          method: 'DELETE',
-        });
+        const response = await api.delete(`/api/admin/services/${serviceId}`);
 
-        if (response.ok) {
+        if (response.status >= 200 && response.status < 300) {
           fetchServices();
         } else {
           alert('Greška pri brisanju usluge');
@@ -94,10 +90,59 @@ const ServicesManagement = () => {
       duration: 30,
       price: 0,
       description: '',
+      image: 'https://images.unsplash.com/photo-1622287162716-277385e39a2f?w=800&auto=format&fit=crop',
       isActive: true
     });
     setEditingService(null);
     setShowForm(false);
+  };
+
+  const handleDragStart = (e, service, index) => {
+    setDraggingId(service._id);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e, targetService, targetIndex) => {
+    e.preventDefault();
+    
+    if (!draggingId || draggingId === targetService._id) {
+      setDraggingId(null);
+      return;
+    }
+
+    const draggedIndex = services.findIndex(s => s._id === draggingId);
+    const newServices = [...services];
+    const [draggedItem] = newServices.splice(draggedIndex, 1);
+    newServices.splice(targetIndex, 0, draggedItem);
+
+    // Ažuriraj displayOrder
+    const reorderedServices = newServices.map((s, idx) => ({
+      _id: s._id,
+      displayOrder: idx
+    }));
+
+    // Optimistički update UI
+    setServices(newServices);
+    setDraggingId(null);
+
+    // Pošalji na server
+    try {
+      const response = await api.put('/api/services/reorder', { services: reorderedServices });
+
+      if (!(response.status >= 200 && response.status < 300)) {
+        // Rollback on error
+        fetchServices();
+      }
+    } catch (error) {
+      console.error('Error reordering services:', error);
+      fetchServices();
+    }
   };
 
   if (loading) {
@@ -167,6 +212,25 @@ const ServicesManagement = () => {
               </div>
 
               <div className="form-group">
+                <label>URL slike:</label>
+                <input
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                />
+                {formData.image && (
+                  <div className="image-preview">
+                    <LazyImage
+                      src={formData.image}
+                      alt="Preview"
+                      style={{width: '100%', height: 'auto', display: 'block'}}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
                 <label>
                   <input
                     type="checkbox"
@@ -191,10 +255,25 @@ const ServicesManagement = () => {
       )}
 
       <div className="items-grid">
-        {services.map((service) => (
-          <div key={service._id} className="item-card">
+        {services.map((service, index) => (
+          <div 
+            key={service._id} 
+            className={`item-card ${draggingId === service._id ? 'dragging' : ''}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, service, index)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, service, index)}
+          >
+            {service.image && (
+              <div className="service-image">
+                <LazyImage src={service.image} alt={service.name} />
+              </div>
+            )}
             <div className="item-header">
-              <h3>{service.name}</h3>
+              <h3>
+                <span className="drag-handle">⋮⋮</span>
+                {service.name}
+              </h3>
               <span className={`status-badge ${service.isActive ? 'active' : 'inactive'}`}>
                 {service.isActive ? 'Aktivna' : 'Neaktivna'}
               </span>

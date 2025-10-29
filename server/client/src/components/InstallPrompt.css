@@ -1,0 +1,170 @@
+.install-prompt {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.05) 0%, transparent 100%);
+  pointer-events: none;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.install-prompt-content {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(30, 64, 175, 0.4);
+  pointer-events: auto;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.install-prompt-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.install-prompt-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.install-prompt-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.install-prompt-text p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.install-prompt-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.install-btn-primary {
+  background: white;
+  color: #1e40af;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.install-btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.install-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.install-btn-dismiss {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.install-btn-dismiss:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.install-btn-dismiss:active {
+  transform: scale(0.9);
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .install-prompt {
+    padding: 12px;
+  }
+
+  .install-prompt-content {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .install-prompt-icon {
+    font-size: 28px;
+  }
+
+  .install-prompt-text h3 {
+    font-size: 15px;
+  }
+
+  .install-prompt-text p {
+    font-size: 12px;
+  }
+
+  .install-btn-primary {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Landscape phone - more compact */
+@media (max-width: 896px) and (orientation: landscape) {
+  .install-prompt {
+    padding: 8px;
+  }
+
+  .install-prompt-content {
+    padding: 10px 14px;
+    gap: 10px;
+    border-radius: 12px;
+  }
+
+  .install-prompt-icon {
+    font-size: 24px;
+  }
+
+  .install-prompt-text h3 {
+    font-size: 14px;
+  }
+
+  .install-prompt-text p {
+    display: none; /* Hide description in landscape to save space */
+  }
+
+  .install-btn-primary {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+}

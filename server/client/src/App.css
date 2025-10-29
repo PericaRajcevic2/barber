@@ -116,6 +116,133 @@ html {
   background: white;
 }
 
+/* Skeleton loader styles */
+.skeleton {
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+  border-radius: 10px;
+}
+
+.skeleton.skeleton-select {
+  height: 52px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.skeleton.skeleton-line { height: 14px; width: 70%; margin: 8px 0; border-radius: 6px; }
+
+@keyframes skeleton-loading {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* Confirm modal styles (reuse success modal visuals) */
+.confirm-modal .modal-content {
+  max-width: 640px;
+  background: linear-gradient(180deg, #2a1f1f, #2f1f1f 60%, #2a1d1d);
+  border: 1px solid rgba(255, 153, 0, 0.25);
+}
+
+.confirm-title {
+  color: #ffb347;
+  text-align: center;
+  letter-spacing: 0.6px;
+  margin-top: 6px;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+
+.confirm-summary {
+  margin: 10px auto 18px auto;
+  padding: 12px 16px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.confirm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+}
+
+.confirm-label {
+  color: rgba(255,255,255,0.8);
+  font-weight: 600;
+}
+
+.confirm-value {
+  color: #ffffff;
+  text-align: right;
+  font-weight: 600;
+}
+
+.confirm-value.muted {
+  color: rgba(255,255,255,0.85);
+}
+
+.confirm-note {
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+}
+
+/* Editable fields inside confirm modal */
+.confirm-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  margin-top: 14px;
+}
+
+.confirm-field { display: flex; flex-direction: column; gap: 6px; }
+.confirm-field.full { grid-column: 1 / -1; }
+.confirm-field label { color: rgba(255,255,255,0.85); font-weight: 600; font-size: 0.92rem; }
+.confirm-field input,
+.confirm-field textarea {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  outline: none;
+}
+.confirm-field input:focus,
+.confirm-field textarea:focus { border-color: rgba(255, 179, 71, 0.65); box-shadow: 0 0 0 3px rgba(255,179,71,0.15); }
+
+@media (max-width: 640px) {
+  .confirm-grid, .confirm-edit-grid { grid-template-columns: 1fr; }
+  .confirm-value { text-align: left; }
+}
+
+.confirm-actions { 
+  display: flex; 
+  gap: 12px; 
+  margin-top: 18px; 
+  justify-content: flex-end;
+}
+.btn-secondary-outline { 
+  background: transparent; 
+  border: 2px solid rgba(255,255,255,0.18); 
+  color: rgba(255,255,255,0.9); 
+  padding: 10px 16px; 
+  border-radius: 10px; 
+  cursor: pointer; 
+}
+.btn-secondary-outline:hover { border-color: rgba(255,255,255,0.35); }
+
+.btn-primary-solid { 
+  background: linear-gradient(135deg, #6a88ff, #4660d9); 
+  color: #fff; 
+  border: none; 
+  padding: 10px 18px; 
+  border-radius: 10px; 
+  cursor: pointer; 
+  box-shadow: 0 6px 18px rgba(70, 96, 217, .35); 
+}
+.btn-primary-solid:disabled { opacity: .7; cursor: not-allowed; }
+
 .service-select:focus {
   outline: none;
   border-color: #667eea;
@@ -1030,6 +1157,79 @@ html, body {
   .calendar-section {
     padding: 16px 12px !important;
   }
+  
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Services grid */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.service-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.service-card.selected {
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.service-card-image {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+}
+
+.service-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.service-card-content {
+  padding: 15px;
+}
+
+.service-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.service-card-duration,
+.service-card-price {
+  margin: 4px 0;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.service-card-price {
+  font-weight: 600;
+  color: #2196F3;
+  font-size: 1.1rem;
+}
+
+.service-card-desc {
+  margin: 8px 0 0 0;
+  font-size: 0.85rem;
+  color: #999;
+  line-height: 1.4;
 }
 
 .calendar-section::before,

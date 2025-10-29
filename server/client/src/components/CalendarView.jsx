@@ -12,6 +12,8 @@ const CalendarView = () => {
   const [mobileStartDate, setMobileStartDate] = useState(new Date());
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [draggingId, setDraggingId] = useState(null);
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, appointment: null });
 
   // Minimalna udaljenost za swipe
   const minSwipeDistance = 50;
@@ -82,8 +84,10 @@ const CalendarView = () => {
       fetchMobileAppointments();
     } else if (viewMode === 'week') {
       fetchWeekAppointments();
-    } else {
+    } else if (viewMode === 'day') {
       fetchDayAppointments();
+    } else if (viewMode === 'month') {
+      fetchMonthAppointments();
     }
   }, [currentWeek, viewMode, isMobile, mobileStartDate]);
 
@@ -137,6 +141,32 @@ const CalendarView = () => {
     }
   };
 
+  const fetchMonthAppointments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const firstDay = new Date(currentWeek.getFullYear(), currentWeek.getMonth(), 1);
+      const lastDay = new Date(currentWeek.getFullYear(), currentWeek.getMonth() + 1, 0);
+      const startDate = firstDay.toISOString().split('T')[0];
+      const endDate = lastDay.toISOString().split('T')[0];
+
+      const response = await fetch(`/api/appointments/week?start=${startDate}&end=${endDate}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Greška pri dohvaćanju narudžbi');
+      }
+
+      setAppointments(data);
+    } catch (err) {
+      console.error('Error fetching appointments (month):', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchDayAppointments = async () => {
     try {
       setLoading(true);
@@ -169,8 +199,10 @@ const CalendarView = () => {
       const newDate = new Date(currentWeek);
       if (viewMode === 'week') {
         newDate.setDate(newDate.getDate() + (direction * 7));
-      } else {
+      } else if (viewMode === 'day') {
         newDate.setDate(newDate.getDate() + direction);
+      } else if (viewMode === 'month') {
+        newDate.setMonth(newDate.getMonth() + direction);
       }
       setCurrentWeek(newDate);
     }
@@ -303,8 +335,91 @@ const CalendarView = () => {
     }
   };
 
+  // Helpers for DnD and refresh
+  const getSlotHeight = () => (isMobile ? 50 : 40);
+
+  const refreshAppointments = async () => {
+    if (isMobile) {
+      await fetchMobileAppointments();
+    } else if (viewMode === 'week') {
+      await fetchWeekAppointments();
+    } else if (viewMode === 'day') {
+      await fetchDayAppointments();
+    } else {
+      await fetchWeekAppointments(); // fallback
+    }
+  };
+
+  const handleDragStart = (e, appointment) => {
+    try {
+      e.dataTransfer.setData('text/plain', appointment._id);
+      setDraggingId(appointment._id);
+    } catch {}
+  };
+
+  const handleDropOnDay = async (e, date) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('text/plain') || draggingId;
+    setDraggingId(null);
+    if (!id) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relY = e.clientY - rect.top;
+    const slotH = getSlotHeight();
+    const slotsFromStart = Math.max(0, Math.floor(relY / slotH));
+    const minutesFromStart = slotsFromStart * 30; // 30-min increments
+
+    const newDate = new Date(date);
+    newDate.setHours(8, 0, 0, 0);
+    newDate.setMinutes(newDate.getMinutes() + minutesFromStart);
+
+    try {
+      const res = await fetch(`/api/appointments/${id}/reschedule`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: newDate.toISOString() })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || 'Greška pri promjeni termina');
+        return;
+      }
+      // Update local state optimistically
+      setAppointments(prev => prev.map(a => a._id === id ? data : a));
+    } catch (err) {
+      console.error('Reschedule error:', err);
+      alert('Greška pri promjeni termina');
+    }
+  };
+
+  const getMonthDaysMatrix = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstOfMonth = new Date(year, month, 1);
+    const startDay = firstOfMonth.getDay() === 0 ? 7 : firstOfMonth.getDay(); // Mon=1..Sun=7
+    const startDate = new Date(year, month, 1 - (startDay - 1));
+    const weeks = [];
+    for (let w = 0; w < 6; w++) {
+      const week = [];
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + w * 7 + d);
+        week.push(day);
+      }
+      weeks.push(week);
+    }
+    return weeks;
+  };
+
+  const openContextMenu = (e, appointment) => {
+    e.preventDefault();
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, appointment });
+  };
+
+  const closeContextMenu = () => setContextMenu(prev => ({ ...prev, visible: false }));
+
   return (
-    <div className="calendar-view">
+    <div className="calendar-view" onClick={closeContextMenu}>
       {/* Header */}
       <div className="calendar-header">
         <div className="calendar-navigation">
@@ -322,7 +437,9 @@ const CalendarView = () => {
               ? `${displayDays[0].getDate()}. - ${displayDays[2].getDate()}. ${monthNames[displayDays[0].getMonth()]} ${displayDays[0].getFullYear()}`
               : viewMode === 'week' 
                 ? `${monthNames[currentWeek.getMonth()]} ${currentWeek.getFullYear()}`
-                : `${currentWeek.getDate()}. ${monthNames[currentWeek.getMonth()]} ${currentWeek.getFullYear()}`
+                : viewMode === 'day'
+                  ? `${currentWeek.getDate()}. ${monthNames[currentWeek.getMonth()]} ${currentWeek.getFullYear()}`
+                  : `${monthNames[currentWeek.getMonth()]} ${currentWeek.getFullYear()}`
             }
           </div>
         </div>
@@ -340,13 +457,69 @@ const CalendarView = () => {
             >
               TJEDAN
             </button>
+            <button 
+              className={`view-btn ${viewMode === 'month' ? 'active' : ''}`}
+              onClick={() => setViewMode('month')}
+            >
+              MJESEC
+            </button>
           </div>
         )}
+        <div className="legend">
+          <span><i className="legend-box pending"></i> Na čekanju</span>
+          <span><i className="legend-box confirmed"></i> Potvrđeno</span>
+          <span><i className="legend-box cancelled"></i> Otkazano</span>
+          <span><i className="legend-box completed"></i> Završeno</span>
+        </div>
       </div>
 
       <div className="calendar-container">
         {/* Kalendar */}
-        <div className={`calendar-content ${selectedAppointment ? 'with-sidebar' : ''}`}>
+        <div className={`calendar-content ${selectedAppointment ? 'with-sidebar' : ''} ${(!isMobile && viewMode === 'month') ? 'month-mode' : ''}`}>
+          {(!isMobile && viewMode === 'month') && (
+            <div className="month-grid">
+              {getMonthDaysMatrix(currentWeek).map((week, wi) => (
+                <div key={wi} className="month-week">
+                  {week.map((day, di) => {
+                    const isCurrentMonth = day.getMonth() === currentWeek.getMonth();
+                    const dayApps = getAppointmentsForDay(day);
+                    return (
+                      <div 
+                        key={di} 
+                        className={`month-day ${isCurrentMonth ? '' : 'muted'}`}
+                        onClick={(e) => {
+                          // Only switch view if clicking on empty space (not on event)
+                          if (e.target.classList.contains('month-day') || 
+                              e.target.classList.contains('month-day-header') || 
+                              e.target.classList.contains('month-day-body') ||
+                              e.target.classList.contains('more')) {
+                            setCurrentWeek(new Date(day));
+                            setViewMode('day');
+                          }
+                        }}
+                      >
+                        <div className="month-day-header">{day.getDate()}</div>
+                        <div className="month-day-body">
+                          {dayApps.slice(0, 3).map(app => (
+                            <div
+                              key={app._id}
+                              className={`month-event status-${app.status}`}
+                              onClick={(e) => { e.stopPropagation(); setSelectedAppointment(app); }}
+                              onContextMenu={(e) => openContextMenu(e, app)}
+                            >
+                              {new Date(app.date).toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' })} {app.customerName}
+                            </div>
+                          ))}
+                          {dayApps.length > 3 && <div className="more">+{dayApps.length - 3} više</div>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Header s datumima */}
           <div 
             className={`calendar-dates-header ${isMobile ? 'mobile-view' : viewMode === 'day' ? 'day-view' : ''}`}
@@ -390,7 +563,7 @@ const CalendarView = () => {
 
             {/* Dani */}
             {displayDays.map((date, dayIndex) => (
-              <div key={dayIndex} className="day-column">
+              <div key={dayIndex} className="day-column" onDragOver={(e)=>e.preventDefault()} onDrop={(e)=>handleDropOnDay(e, date)}>
                 {timeSlots.map((time, timeIndex) => (
                   <div key={timeIndex} className="hour-slot"></div>
                 ))}
@@ -405,9 +578,12 @@ const CalendarView = () => {
                       className={`appointment-block status-${appointment.status} service-${serviceClass} ${selectedAppointment?._id === appointment._id ? 'selected' : ''}`}
                       style={{
                         top: `${position.top}px`,
-                        height: `${position.height}px`,
-                        backgroundColor: getServiceColor(appointment.service?.name)
+                        height: `${position.height}px`
                       }}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, appointment)}
+                      onDragEnd={() => setDraggingId(null)}
+                      onContextMenu={(e) => openContextMenu(e, appointment)}
                       onClick={() => setSelectedAppointment(appointment)}
                     >
                       <div className="appointment-content">
@@ -536,6 +712,14 @@ const CalendarView = () => {
 
       {loading && <div className="loading-overlay">Učitavanje...</div>}
       {error && <div className="error-message">{error}</div>}
+
+      {contextMenu.visible && (
+        <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x, position:'fixed' }}>
+          <button onClick={() => { updateAppointmentStatus(contextMenu.appointment._id, 'confirmed'); closeContextMenu(); }}>Potvrdi</button>
+          <button onClick={() => { updateAppointmentStatus(contextMenu.appointment._id, 'cancelled'); closeContextMenu(); }}>Otkaži</button>
+          <button onClick={() => { setSelectedAppointment(contextMenu.appointment); closeContextMenu(); }}>Uredi</button>
+        </div>
+      )}
     </div>
   );
 };

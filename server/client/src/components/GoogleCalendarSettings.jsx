@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import './ManagementStyles.css';
+import './ManagementStyles.clean.css';
 
 const GoogleCalendarSettings = () => {
   const [authStatus, setAuthStatus] = useState('unknown');
+  const [hasTokens, setHasTokens] = useState(false);
+  const [enabled, setEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -14,9 +16,13 @@ const GoogleCalendarSettings = () => {
       const response = await fetch('/api/auth/google/status');
       const data = await response.json();
       setAuthStatus(data.authenticated ? 'authenticated' : 'not_authenticated');
+      setHasTokens(!!data.hasTokens);
+      setEnabled(!!data.enabled);
     } catch (error) {
       console.error('Error checking auth status:', error);
       setAuthStatus('not_authenticated');
+      setHasTokens(false);
+      setEnabled(false);
     }
   };
 
@@ -45,11 +51,31 @@ const GoogleCalendarSettings = () => {
       
       if (data.success) {
         setAuthStatus('not_authenticated');
+        setHasTokens(false);
         alert('Google Calendar je uspješno odspojen');
       }
     } catch (error) {
       console.error('Error disconnecting Google Calendar:', error);
       alert('Došlo je do greške pri odspajanju Google Calendara');
+    }
+  };
+
+  const handleToggleEnabled = async () => {
+    try {
+      const response = await fetch('/api/auth/google/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: !enabled })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setEnabled(data.enabled);
+      } else {
+        alert('Greška pri promjeni statusa integracije');
+      }
+    } catch (error) {
+      console.error('Error toggling integration:', error);
+      alert('Greška pri promjeni statusa integracije');
     }
   };
 
@@ -79,12 +105,12 @@ const GoogleCalendarSettings = () => {
         <div className="setting-card">
           <h3>📅 Status Integracije</h3>
           
-          <div className={`status-indicator ${authStatus === 'authenticated' ? 'status-connected' : 'status-disconnected'}`}>
-            {authStatus === 'authenticated' ? (
+          <div className={`status-indicator ${(authStatus === 'authenticated' && hasTokens) ? 'status-connected' : 'status-disconnected'}`}>
+            {(authStatus === 'authenticated' && hasTokens) ? (
               <div className="status-content">
                 <span className="status-dot connected"></span>
                 <strong>Povezan s Google Calendarom</strong>
-                <p>Termini će se automatski dodavati u vaš Google Calendar</p>
+                <p>Tokeni spremljeni u bazi. Autentifikacija aktivna.</p>
               </div>
             ) : (
               <div className="status-content">
@@ -96,7 +122,7 @@ const GoogleCalendarSettings = () => {
           </div>
 
           <div className="auth-actions">
-            {authStatus === 'authenticated' ? (
+            {(authStatus === 'authenticated' && hasTokens) ? (
               <button 
                 onClick={handleDisconnect}
                 className="btn-secondary"
@@ -114,12 +140,25 @@ const GoogleCalendarSettings = () => {
             )}
           </div>
 
+          {(authStatus === 'authenticated' && hasTokens) && (
+            <div className="setting-row" style={{ marginTop: '16px' }}>
+              <label>Integracija uključena:</label>
+              <button onClick={handleToggleEnabled} className="btn-secondary">
+                {enabled ? 'Isključi' : 'Uključi'}
+              </button>
+              <span style={{ marginLeft: 12, color: enabled ? '#16a34a' : '#6b7280' }}>
+                {enabled ? 'Aktivna' : 'Onemogućena (tokeni su sačuvani)'}
+              </span>
+            </div>
+          )}
+
           <div className="integration-info">
             <h4>Što ova integracija omogućuje?</h4>
             <ul>
               <li>✅ Automatsko dodavanje novih termina u Google Calendar</li>
               <li>✅ Automatsko ažuriranje termina kada se promijene</li>
               <li>✅ Automatsko brisanje termina kada se otkažu</li>
+              <li>✅ Dvosmjerna sinkronizacija preko Google webhooks</li>
               <li>✅ Email i push notifikacije iz Google Calendara</li>
               <li>✅ Sync sa svim vašim uređajima</li>
               <li>✅ Podsjetnici za termine</li>

@@ -5,6 +5,9 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 require('dotenv').config();
+const { google } = require('googleapis');
+const calendarService = require('./utils/calendarService');
+const GoogleToken = require('./models/GoogleToken');
 
 const app = express();
 
@@ -28,6 +31,29 @@ const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/barber-booking');
     console.log('MongoDB connected successfully');
+    // Initialize Google Calendar OAuth client from stored tokens (if any)
+    try {
+      const tokenDoc = await GoogleToken.getToken();
+      if (tokenDoc && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+        const oauth2Client = new google.auth.OAuth2(
+          process.env.GOOGLE_CLIENT_ID,
+          process.env.GOOGLE_CLIENT_SECRET,
+          process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'
+        );
+        const tokens = tokenDoc.toObject();
+        oauth2Client.setCredentials(tokens);
+        calendarService.setAuthClient(oauth2Client);
+        console.log('✅ Google Calendar auth initialized from DB tokens');
+      } else {
+        console.log('ℹ️  No Google tokens found or client credentials missing');
+      }
+    } catch (gerr) {
+      console.error('❌ Failed to initialize Google auth from DB:', gerr.message);
+    }
+    
+    // Pokreni email scheduler nakon uspješnog spoja na bazu
+    const { startScheduler } = require('./scheduler');
+    startScheduler();
   } catch (error) {
     console.error('MongoDB connection error:', error);
     process.exit(1);
@@ -63,6 +89,10 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/auth/google', require('./routes/googleAuth'));
 app.use('/api/setup', require('./routes/setup')); // Setup/seed endpoints
 app.use('/api/debug', require('./routes/debug')); // Guarded debug endpoints
+app.use('/api/reviews', require('./routes/reviews')); // Reviews endpoints
+app.use('/api/settings', require('./routes/settings')); // Settings endpoints
+app.use('/api/push', require('./routes/push')); // Push notifications endpoints
+app.use('/api/notifications', require('./routes/notifications')); // Persisted notifications
 
 // Health check za API
 app.get('/api/health', (req, res) => {
@@ -72,6 +102,14 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Development mode: redirect /cancel/:token to Vite dev server
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/cancel/:token', (req, res) => {
+    const viteUrl = process.env.DEV_ORIGIN || 'http://localhost:3000';
+    res.redirect(`${viteUrl}/cancel/${req.params.token}`);
+  });
+}
 
 // Serve static files from React app in production
 if (process.env.NODE_ENV === 'production') {

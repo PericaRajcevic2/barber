@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="72" height="72" fill="#1e40af" rx="14.4"/>
+  
+  <!-- Scissors Icon (Barber Symbol) -->
+  <g transform="translate(36, 36)">
+    <!-- Left Blade -->
+    <circle cx="-10.799999999999999" cy="-10.799999999999999" r="8.64" fill="white" opacity="0.9"/>
+    <circle cx="-10.799999999999999" cy="-10.799999999999999" r="4.32" fill="#1e40af"/>
+    
+    <!-- Right Blade -->
+    <circle cx="10.799999999999999" cy="10.799999999999999" r="8.64" fill="white" opacity="0.9"/>
+    <circle cx="10.799999999999999" cy="10.799999999999999" r="4.32" fill="#1e40af"/>
+    
+    <!-- Center Screw -->
+    <circle cx="0" cy="0" r="3.6" fill="white"/>
+    
+    <!-- Lines connecting handles to blades -->
+    <line x1="-5.76" y1="-5.76" x2="0" y2="0" stroke="white" stroke-width="1.44" stroke-linecap="round"/>
+    <line x1="5.76" y1="5.76" x2="0" y2="0" stroke="white" stroke-width="1.44" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="36" y="61.199999999999996" font-family="Arial, sans-serif" font-size="8.64" font-weight="bold" fill="white" text-anchor="middle">BARBER</text>
+</svg>

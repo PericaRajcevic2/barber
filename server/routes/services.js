@@ -5,7 +5,7 @@ const Service = require('../models/Service');
 // GET /api/services - Dohvati sve usluge
 router.get('/', async (req, res) => {
   try {
-    const services = await Service.find({ isActive: true }).sort({ name: 1 });
+    const services = await Service.find({ isActive: true }).sort({ displayOrder: 1, name: 1 });
     res.json(services);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -54,6 +54,24 @@ router.delete('/:id', async (req, res) => {
     res.json({ message: 'Usluga deaktivirana' });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// PUT /api/services/reorder - Ažuriraj redoslijed usluga
+router.put('/reorder', async (req, res) => {
+  try {
+    const { services } = req.body; // [{ _id, displayOrder }, ...]
+    
+    const updates = services.map(({ _id, displayOrder }) =>
+      Service.findByIdAndUpdate(_id, { displayOrder }, { new: true })
+    );
+    
+    await Promise.all(updates);
+    
+    const updatedServices = await Service.find({ isActive: true }).sort({ displayOrder: 1, name: 1 });
+    res.json(updatedServices);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 });
 

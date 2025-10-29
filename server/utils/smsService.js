@@ -76,6 +76,43 @@ async function sendText(to, text) {
   return res;
 }
 
+// Send WhatsApp Cloud API template message
+async function sendTemplate(to, templateName, language = (process.env.WHATSAPP_LANG || 'en_US'), bodyParameters = []) {
+  if (!isConfigured()) {
+    console.log('ℹ️  WhatsApp template nije konfiguriran - preskačem slanje');
+    return { success: false, error: 'WHATSAPP not configured' };
+  }
+
+  const token = process.env.WHATSAPP_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_ID;
+  const recipient = normalizePhone(to);
+
+  const payload = {
+    messaging_product: 'whatsapp',
+    to: recipient,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: { code: language },
+      components: bodyParameters.length ? [
+        {
+          type: 'body',
+          parameters: bodyParameters.map((text) => ({ type: 'text', text: String(text) }))
+        }
+      ] : []
+    }
+  };
+
+  const path = `/v17.0/${encodeURIComponent(phoneId)}/messages`;
+  const res = await postWhatsApp(path, payload, token);
+  if (!res.success) {
+    console.error('❌ WhatsApp template slanje nije uspjelo:', res.error);
+  } else {
+    console.log('✅ WhatsApp template poruka poslana na', recipient, 'template:', templateName);
+  }
+  return res;
+}
+
 function formatDate(dt) {
   try {
     return new Date(dt).toLocaleString('hr-HR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -98,6 +135,28 @@ exports.sendAppointmentConfirmation = async (appointment) => {
 
     const body = `💈 Barber Shop\n\nPotvrda rezervacije:\n• Ime: ${appointment.customerName}\n• Termin: ${when}\n• Usluga: ${service}${cancel}`;
     return await sendText(to, body);
+  } catch (e) {
+    return { success: false, error: e };
+  }
+};
+
+// Wrapper to send confirmation via approved WhatsApp template
+exports.sendTemplateConfirmation = async (appointment) => {
+  try {
+    const to = appointment.customerPhone;
+    if (!to) return { success: false, error: 'No customerPhone' };
+
+    const templateName = process.env.WHATSAPP_TEMPLATE_CONFIRMATION_NAME;
+    const language = process.env.WHATSAPP_LANG || 'en_US';
+    if (!templateName) return { success: false, error: 'No template configured' };
+
+    const when = formatDate(appointment.date);
+    const service = appointment.service?.name || 'Usluga';
+    const cancelUrl = appointment.cancellationToken ? `${appUrl()}/cancel/${appointment.cancellationToken}` : '';
+
+    // Note: The order of parameters must match your approved template placeholders {{1}}, {{2}}, ...
+    const params = [appointment.customerName || '', when, service, cancelUrl].filter(Boolean);
+    return await sendTemplate(to, templateName, language, params);
   } catch (e) {
     return { success: false, error: e };
   }
@@ -135,3 +194,4 @@ exports.sendAppointmentCancellation = async (appointment, reason = '') => {
 
 // Optional export to check config status
 exports.isConfigured = isConfigured;
+exports.sendTemplate = sendTemplate;

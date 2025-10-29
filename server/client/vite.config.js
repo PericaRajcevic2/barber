@@ -23,5 +23,16 @@ export default defineConfig({
         },
       }
     }
-  }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    // Copy PWA files to dist root
+    rollupOptions: {
+      input: {
+        main: './index.html',
+      },
+    },
+  },
+  publicDir: 'public', // Ensures public folder (manifest.json, service-worker.js, icons) is copied
 })

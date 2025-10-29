@@ -43,6 +43,44 @@ const appointmentSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+  cancellationReason: {
+    type: String,
+    enum: ['illness', 'emergency', 'mistake', 'schedule_conflict', 'other', ''],
+    default: ''
+  },
+  cancellationNote: {
+    type: String,
+    trim: true
+  },
+  cancelledAt: {
+    type: Date
+  },
+  rescheduledFrom: {
+    type: Date
+  },
+  // Email tracking
+  reminderSent: {
+    type: Boolean,
+    default: false
+  },
+  reminderSentAt: {
+    type: Date
+  },
+  followUpSent: {
+    type: Boolean,
+    default: false
+  },
+  followUpSentAt: {
+    type: Date
+  },
+  emailTracking: {
+    reminderOpened: { type: Boolean, default: false },
+    reminderOpenedAt: { type: Date },
+    followUpOpened: { type: Boolean, default: false },
+    followUpOpenedAt: { type: Date },
+    reviewLinkClicked: { type: Boolean, default: false },
+    reviewLinkClickedAt: { type: Date }
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -3,6 +3,7 @@ const router = express.Router();
 const WorkingHours = require('../models/WorkingHours');
 const Appointment = require('../models/Appointment');
 const BlockedDate = require('../models/BlockedDate');
+const Settings = require('../models/Settings');
 
 // GET /api/available-slots?date=YYYY-MM-DD - Dohvati dostupne termine za određeni dan
 router.get('/', async (req, res) => {
@@ -51,6 +52,17 @@ router.get('/', async (req, res) => {
 
     // Generiraj sve moguće termine
     const timeSlots = generateTimeSlots(workingHours.startTime, workingHours.endTime, 30);
+    
+    // Dohvati break slots iz settings
+    const settings = await Settings.getSettings();
+    const breakSlots = settings.breakSlots || [];
+    
+    // Filtriraj break slots
+    const breakTimes = [];
+    breakSlots.forEach(breakSlot => {
+      const breakSlotTimes = generateTimeSlots(breakSlot.startTime, breakSlot.endTime, 30);
+      breakTimes.push(...breakSlotTimes);
+    });
     
     // ⭐⭐ ISPRAVNO: Pronađi ZAUZETE termine za TAJ DAN u UTC ⭐⭐
     // Pripremi ISO granice za upit (DB pohranjuje u UTC)
@@ -105,8 +117,12 @@ router.get('/', async (req, res) => {
       
       let status = 'available';
       
+      // Provjeri je li termin u break slotu
+      if (breakTimes.includes(slot)) {
+        status = 'break';
+      }
       // Provjeri je li termin prošao (samo za danas)
-      if (isToday && slotDate.getTime() <= now.getTime()) {
+      else if (isToday && slotDate.getTime() <= now.getTime()) {
         status = 'past';
       }
       // Provjeri je li termin zauzet

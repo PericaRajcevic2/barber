@@ -27,7 +27,6 @@ router.get('/env', (req, res) => {
     has_MONGODB_URI: Boolean(process.env.MONGODB_URI),
     has_EMAIL_USER: Boolean(process.env.EMAIL_USER),
     has_EMAIL_PASS: Boolean(process.env.EMAIL_PASS),
-    has_RESEND_API_KEY: Boolean(process.env.RESEND_API_KEY),
     has_WHATSAPP_TOKEN: Boolean(process.env.WHATSAPP_TOKEN),
     has_WHATSAPP_PHONE_ID: Boolean(process.env.WHATSAPP_PHONE_ID)
   });

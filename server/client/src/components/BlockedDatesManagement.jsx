@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './ManagementStyles.css';
+import './ManagementStyles.clean.css';
 
 const BlockedDatesManagement = () => {
   const [blockedDates, setBlockedDates] = useState([]);

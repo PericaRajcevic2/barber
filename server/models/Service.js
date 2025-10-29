@@ -20,6 +20,14 @@ const serviceSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  image: {
+    type: String,
+    default: 'https://images.unsplash.com/photo-1622287162716-277385e39a2f?w=800&auto=format&fit=crop'
+  },
+  displayOrder: {
+    type: Number,
+    default: 0
+  },
   isActive: {
     type: Boolean,
     default: true

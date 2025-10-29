@@ -81,6 +81,145 @@ router.get('/statistics', async (req, res) => {
   }
 });
 
+// GET /api/admin/statistics/charts - Dohvati podatke za chartove
+router.get('/statistics/charts', async (req, res) => {
+  try {
+    const { range = 'month' } = req.query;
+    
+    let startDate = new Date();
+    let groupBy = 'day';
+    
+    switch (range) {
+      case 'week':
+        startDate.setDate(startDate.getDate() - 7);
+        groupBy = 'day';
+        break;
+      case 'month':
+        startDate.setDate(startDate.getDate() - 30);
+        groupBy = 'day';
+        break;
+      case 'year':
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        groupBy = 'month';
+        break;
+      default:
+        startDate.setDate(startDate.getDate() - 30);
+        groupBy = 'day';
+    }
+
+    // Dohvati sve narudžbe u periodu
+    const appointments = await Appointment.find({
+      date: { $gte: startDate },
+      status: { $in: ['pending', 'confirmed', 'completed'] }
+    }).populate('service').sort({ date: 1 });
+
+    // Revenue i appointments over time
+    const timeSeriesData = {};
+    appointments.forEach(apt => {
+      const dateKey = groupBy === 'day' 
+        ? apt.date.toISOString().split('T')[0]
+        : `${apt.date.getFullYear()}-${String(apt.date.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!timeSeriesData[dateKey]) {
+        timeSeriesData[dateKey] = {
+          date: dateKey,
+          appointments: 0,
+          revenue: 0
+        };
+      }
+      
+      timeSeriesData[dateKey].appointments++;
+      if (apt.service && typeof apt.service.price === 'number') {
+        timeSeriesData[dateKey].revenue += apt.service.price;
+      }
+    });
+
+    const revenueOverTime = Object.values(timeSeriesData).sort((a, b) => 
+      a.date.localeCompare(b.date)
+    );
+
+    // Top 5 services
+    const serviceCounts = {};
+    appointments.forEach(apt => {
+      if (!apt.service) return;
+      const serviceId = apt.service._id.toString();
+      if (!serviceCounts[serviceId]) {
+        serviceCounts[serviceId] = {
+          name: apt.service.name || '(unknown)',
+          count: 0,
+          revenue: 0
+        };
+      }
+      serviceCounts[serviceId].count++;
+      serviceCounts[serviceId].revenue += (typeof apt.service.price === 'number' ? apt.service.price : 0);
+    });
+
+    const topServices = Object.values(serviceCounts)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+
+    // Customer stats: new vs returning
+    const customerEmails = new Set();
+    const customerPhones = new Set();
+    let newCustomers = 0;
+    let returningCustomers = 0;
+
+    // Get all appointments before startDate to identify returning customers
+    const allPreviousAppointments = await Appointment.find({
+      date: { $lt: startDate }
+    });
+
+    const previousEmails = new Set(allPreviousAppointments.map(a => a.customerEmail));
+    const previousPhones = new Set(allPreviousAppointments.map(a => a.customerPhone));
+
+    appointments.forEach(apt => {
+      const email = apt.customerEmail;
+      const phone = apt.customerPhone;
+      const identifier = email || phone;
+      
+      if (!customerEmails.has(identifier)) {
+        customerEmails.add(identifier);
+        
+        // Check if this customer had appointments before the current period
+        if (previousEmails.has(email) || previousPhones.has(phone)) {
+          returningCustomers++;
+        } else {
+          newCustomers++;
+        }
+      }
+    });
+
+    // Total revenue stats
+    const totalRevenue = appointments.reduce((sum, apt) => 
+      sum + (apt.service && typeof apt.service.price === 'number' ? apt.service.price : 0), 0
+    );
+
+    const confirmedRevenue = appointments
+      .filter(apt => apt.status === 'confirmed' || apt.status === 'completed')
+      .reduce((sum, apt) => 
+        sum + (apt.service && typeof apt.service.price === 'number' ? apt.service.price : 0), 0
+      );
+
+    res.json({
+      revenueOverTime,
+      topServices,
+      customerStats: {
+        new: newCustomers,
+        returning: returningCustomers,
+        total: newCustomers + returningCustomers
+      },
+      revenueStats: {
+        total: totalRevenue,
+        confirmed: confirmedRevenue,
+        pending: totalRevenue - confirmedRevenue
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching chart statistics:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // GET /api/admin/services - Dohvati sve usluge (i neaktivne)
 router.get('/services', async (req, res) => {
   try {

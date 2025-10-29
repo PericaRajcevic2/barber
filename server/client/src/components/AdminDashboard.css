@@ -236,3 +236,205 @@
     height: 24px;
   }
 }
+
+/* ========================================
+   TABLET LAYOUT (641px - 1024px)
+   Hybrid desktop/mobile design
+   ======================================== */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .admin-dashboard {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    min-height: 100vh;
+  }
+
+  .admin-header {
+    padding: 16px 0;
+  }
+
+  .admin-header-content {
+    max-width: 100%;
+    padding: 0 24px;
+    gap: 16px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .admin-user {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  /* Tablet Navigation - Horizontal scrollable cards */
+  .admin-navigation {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .admin-nav-content {
+    max-width: 100%;
+    padding: 0 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .admin-nav-content::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .admin-nav-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .admin-nav-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .nav-tab {
+    padding: 16px 20px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    min-width: fit-content;
+  }
+
+  /* Tablet Main Content - Two column where appropriate */
+  .admin-main {
+    padding: 24px;
+    max-width: 100%;
+    overflow-y: auto;
+  }
+
+  /* Grid layouts for management components */
+  .management-container .items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  /* Calendar view - side by side on tablet */
+  .calendar-view-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* Statistics cards - 2 column layout */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Floating back button - tablet position */
+  .floating-back-button {
+    bottom: 24px;
+    left: 24px;
+    width: 56px;
+    height: 56px;
+  }
+
+  /* Touch-friendly spacing */
+  button, .btn-primary, .btn-secondary, .btn-delete {
+    min-height: 44px;
+    padding: 10px 20px;
+  }
+
+  /* Form inputs - comfortable touch targets */
+  input, select, textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Modal dialogs - centered with margin */
+  .modal-content {
+    max-width: 90%;
+    margin: 5vh auto;
+  }
+
+  /* Appointment cards - comfortable spacing */
+  .appointment-card {
+    padding: 18px;
+  }
+
+  /* Reviews layout - 2 columns */
+  .reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Tablet landscape optimization (landscape tablets) */
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: landscape) {
+  .admin-header-content {
+    padding: 0 32px;
+  }
+
+  .admin-main {
+    padding: 24px 32px;
+  }
+
+  /* 3 column layout for landscape */
+  .management-container .items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Side panel layouts */
+  .dashboard-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+}
+
+/* Touch device optimizations (all mobile and tablet) */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger tap targets */
+  button, a, .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better touch feedback */
+  button:active, .btn-primary:active, .btn-secondary:active {
+    transform: scale(0.97);
+    opacity: 0.8;
+  }
+
+  /* Prevent text selection on UI elements */
+  .nav-tab, .calendar-day, .appointment-card-header {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Smoother scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* PWA standalone mode adjustments */
+@media (display-mode: standalone) {
+  .admin-header {
+    padding-top: max(20px, env(safe-area-inset-top));
+  }
+
+  .floating-back-button {
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: max(20px, env(safe-area-inset-left));
+  }
+
+  /* Add safe area padding for notched devices */
+  .admin-main {
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+}
