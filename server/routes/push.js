@@ -10,11 +10,35 @@ const vapidKeys = {
   privateKey: process.env.VAPID_PRIVATE_KEY || 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 };
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@barberbooking.com',
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
+// Normalize and validate VAPID subject to avoid crashing on invalid env values
+const DEFAULT_VAPID_SUBJECT = 'mailto:admin@barberbooking.com';
+const normalizeSubject = (value) => {
+  if (!value) return DEFAULT_VAPID_SUBJECT;
+  const trimmed = String(value).trim().replace(/^['"]|['"]$/g, ''); // strip quotes
+  const isHttp = /^https?:\/\//i.test(trimmed);
+  const isMailto = /^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(trimmed);
+  if (isHttp || isMailto) return trimmed;
+  console.warn(`[push] Invalid VAPID_SUBJECT "${trimmed}". Falling back to ${DEFAULT_VAPID_SUBJECT}.`);
+  return DEFAULT_VAPID_SUBJECT;
+};
+
+const vapidSubject = normalizeSubject(process.env.VAPID_SUBJECT);
+
+try {
+  webpush.setVapidDetails(
+    vapidSubject,
+    vapidKeys.publicKey,
+    vapidKeys.privateKey
+  );
+} catch (err) {
+  console.error('[push] setVapidDetails failed with provided subject:', err?.message);
+  // Last-resort fallback to default subject so app can still boot
+  webpush.setVapidDetails(
+    DEFAULT_VAPID_SUBJECT,
+    vapidKeys.publicKey,
+    vapidKeys.privateKey
+  );
+}
 
 // Get VAPID public key
 router.get('/vapid-public-key', (req, res) => {
