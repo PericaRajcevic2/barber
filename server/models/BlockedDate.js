@@ -34,4 +34,7 @@ const blockedDateSchema = new mongoose.Schema({
   isRangeEnd: Boolean
 });
 
+// Speed up range queries over dates
+blockedDateSchema.index({ date: 1 });
+
 module.exports = mongoose.model('BlockedDate', blockedDateSchema);

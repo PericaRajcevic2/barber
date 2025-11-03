@@ -54,8 +54,10 @@ router.get('/', async (req, res) => {
     }
     
     const appointments = await Appointment.find(filter)
-      .populate('service')
-      .sort({ date: 1 });
+      .select('customerName customerEmail customerPhone service date status notes createdAt rescheduledFrom cancellationToken')
+      .populate({ path: 'service', select: 'name duration price' })
+      .sort({ date: 1 })
+      .lean();
     
     console.log(`✅ Pronađeno ${appointments.length} narudžbi`);
     
@@ -91,8 +93,10 @@ router.get('/week', async (req, res) => {
         $lt: new Date(endDate.getTime() + 1)
       }
     })
-    .populate('service')
-    .sort({ date: 1 });
+    .select('customerName customerEmail customerPhone service date status notes createdAt rescheduledFrom cancellationToken')
+    .populate({ path: 'service', select: 'name duration price' })
+    .sort({ date: 1 })
+    .lean();
     
     console.log(`✅ Pronađeno ${appointments.length} narudžbi za tjedan`);
     

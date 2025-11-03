@@ -18,6 +18,14 @@ const CalendarView = () => {
   // Minimalna udaljenost za swipe
   const minSwipeDistance = 50;
 
+  // Helper function to format date as YYYY-MM-DD using local timezone
+  const formatDateLocal = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Provjeri je li mobile
   useEffect(() => {
     const handleResize = () => {
@@ -97,8 +105,8 @@ const CalendarView = () => {
       setError(null);
       
       const mobileDays = getMobileDays(mobileStartDate);
-      const startDate = mobileDays[0].toISOString().split('T')[0];
-      const endDate = mobileDays[2].toISOString().split('T')[0];
+      const startDate = formatDateLocal(mobileDays[0]);
+      const endDate = formatDateLocal(mobileDays[2]);
       
       const response = await fetch(`/api/appointments/week?start=${startDate}&end=${endDate}`);
       const data = await response.json();
@@ -122,8 +130,8 @@ const CalendarView = () => {
       setError(null);
       
       const weekDays = getWeekDays(currentWeek);
-      const startDate = weekDays[0].toISOString().split('T')[0];
-      const endDate = weekDays[6].toISOString().split('T')[0];
+      const startDate = formatDateLocal(weekDays[0]);
+      const endDate = formatDateLocal(weekDays[6]);
       
       const response = await fetch(`/api/appointments/week?start=${startDate}&end=${endDate}`);
       const data = await response.json();
@@ -148,8 +156,8 @@ const CalendarView = () => {
 
       const firstDay = new Date(currentWeek.getFullYear(), currentWeek.getMonth(), 1);
       const lastDay = new Date(currentWeek.getFullYear(), currentWeek.getMonth() + 1, 0);
-      const startDate = firstDay.toISOString().split('T')[0];
-      const endDate = lastDay.toISOString().split('T')[0];
+      const startDate = formatDateLocal(firstDay);
+      const endDate = formatDateLocal(lastDay);
 
       const response = await fetch(`/api/appointments/week?start=${startDate}&end=${endDate}`);
       const data = await response.json();
@@ -172,7 +180,8 @@ const CalendarView = () => {
       setLoading(true);
       setError(null);
       
-      const selectedDate = currentWeek.toISOString().split('T')[0];
+      // Use local date to avoid timezone issues
+      const selectedDate = formatDateLocal(currentWeek);
       
       const response = await fetch(`/api/appointments?date=${selectedDate}`);
       const data = await response.json();
@@ -239,10 +248,11 @@ const CalendarView = () => {
   };
 
   const getAppointmentsForDay = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     return appointments.filter(app => {
-      const appDate = new Date(app.date).toISOString().split('T')[0];
-      return appDate === dateStr;
+      const appDate = new Date(app.date);
+      const appDateStr = formatDateLocal(appDate);
+      return appDateStr === dateStr;
     });
   };
 
@@ -369,9 +379,17 @@ const CalendarView = () => {
     const slotsFromStart = Math.max(0, Math.floor(relY / slotH));
     const minutesFromStart = slotsFromStart * 30; // 30-min increments
 
-    const newDate = new Date(date);
-    newDate.setHours(8, 0, 0, 0);
-    newDate.setMinutes(newDate.getMinutes() + minutesFromStart);
+    // Create new date ensuring we use the correct day
+    const newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 8, 0, 0, 0);
+    // Add the dropped position minutes
+    newDate.setMinutes(minutesFromStart);
+
+    console.log('Drag & Drop Debug:', {
+      originalDate: date.toISOString(),
+      calculatedDate: newDate.toISOString(),
+      minutesFromStart,
+      viewMode
+    });
 
     try {
       const res = await fetch(`/api/appointments/${id}/reschedule`, {

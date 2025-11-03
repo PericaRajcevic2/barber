@@ -12,6 +12,43 @@ const ReviewForm = lazy(() => import('./components/ReviewForm'));
 const PublicReviews = lazy(() => import('./components/PublicReviews'));
 const InstallPrompt = lazy(() => import('./components/InstallPrompt'));
 
+// Definicija država s pozivnim brojevima
+const COUNTRIES = [
+  { code: 'BA', name: 'Bosna i Hercegovina', flag: '🇧🇦', dialCode: '+387', format: '6X XXX XXX', pattern: /^(\+3876\d{7}|06\d{7})$/ },
+  { code: 'HR', name: 'Hrvatska', flag: '🇭🇷', dialCode: '+385', format: '9X XXX XXXX', pattern: /^(\+3859\d{8}|09\d{8})$/ },
+  { code: 'RS', name: 'Srbija', flag: '🇷🇸', dialCode: '+381', format: '6X XXX XXXX', pattern: /^(\+3816\d{7,8}|06\d{7,8})$/ },
+  { code: 'ME', name: 'Crna Gora', flag: '🇲🇪', dialCode: '+382', format: '6X XXX XXX', pattern: /^(\+3826\d{7}|06\d{7})$/ },
+  { code: 'SI', name: 'Slovenija', flag: '🇸🇮', dialCode: '+386', format: 'XX XXX XXX', pattern: /^(\+386\d{8}|0\d{8})$/ },
+  { code: 'MK', name: 'Sjeverna Makedonija', flag: '🇲🇰', dialCode: '+389', format: 'XX XXX XXX', pattern: /^(\+389\d{8}|0\d{8})$/ },
+  { code: 'AT', name: 'Austrija', flag: '🇦🇹', dialCode: '+43', format: 'XXX XXXXXX', pattern: /^(\+43\d{9,13}|0\d{9,12})$/ },
+  { code: 'DE', name: 'Njemačka', flag: '🇩🇪', dialCode: '+49', format: 'XXX XXXXXXX', pattern: /^(\+49\d{10,11}|0\d{9,10})$/ },
+  { code: 'CH', name: 'Švicarska', flag: '🇨🇭', dialCode: '+41', format: 'XX XXX XX XX', pattern: /^(\+41\d{9}|0\d{9})$/ },
+  { code: 'IT', name: 'Italija', flag: '🇮🇹', dialCode: '+39', format: 'XXX XXX XXXX', pattern: /^(\+39\d{9,10}|0\d{9,10})$/ },
+  { code: 'US', name: 'Sjedinjene Američke Države', flag: '🇺🇸', dialCode: '+1', format: 'XXX XXX XXXX', pattern: /^(\+1\d{10}|1\d{10})$/ },
+  { code: 'GB', name: 'Ujedinjeno Kraljevstvo', flag: '🇬🇧', dialCode: '+44', format: 'XXXX XXXXXX', pattern: /^(\+44\d{10}|0\d{10})$/ },
+];
+
+// Telefonska validacija
+function normalizePhone(p) { return String(p || '').replace(/[^+\d]/g, ''); }
+
+function isValidPhoneForCountry(phone, countryCode) {
+  const country = COUNTRIES.find(c => c.code === countryCode);
+  if (!country) return false;
+  const normalized = normalizePhone(phone);
+  return country.pattern.test(normalized);
+}
+
+// Backwards compatibility - prihvati bilo koji BiH ili HR broj
+function isValidPhoneBiH(p) {
+  const x = normalizePhone(p);
+  return /^\+3876\d{7}$/.test(x) || /^06\d{7}$/.test(x);
+}
+function isValidPhoneHR(p) {
+  const x = normalizePhone(p);
+  return /^\+3859\d{8}$/.test(x) || /^09\d{8}$/.test(x);
+}
+function isValidPhoneAny(p) { return isValidPhoneBiH(p) || isValidPhoneHR(p); }
+
 function App() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -39,6 +76,7 @@ function App() {
     customerPhone: '',
     notes: ''
   });
+  const [selectedCountryCode, setSelectedCountryCode] = useState('BA'); // Default BiH
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -126,21 +164,6 @@ const fetchAvailableSlots = async (selectedDate) => {
   }
 };
 
-
-// Telefonska validacija: default BiH, podrži i Hrvatsku.
-function normalizePhone(p) { return String(p || '').replace(/[^+\d]/g, ''); }
-function isValidPhoneBiH(p) {
-  const x = normalizePhone(p);
-  // +3876XXXXXXX (8 znamenki nakon 6x) ili lokalno 06XXXXXXX (9 znamenki ukupno)
-  return /^\+3876\d{7}$/.test(x) || /^06\d{7}$/.test(x);
-}
-function isValidPhoneHR(p) {
-  const x = normalizePhone(p);
-  // +3859XXXXXXXX (9 nakon 9x) ili lokalno 09XXXXXXXX
-  return /^\+3859\d{8}$/.test(x) || /^09\d{8}$/.test(x);
-}
-function isValidPhoneAny(p) { return isValidPhoneBiH(p) || isValidPhoneHR(p); }
-
 const handleOpenConfirm = (e) => {
   e.preventDefault();
   if (!selectedService) {
@@ -159,8 +182,9 @@ const handleOpenConfirm = (e) => {
     toast.error('Unesite email adresu.');
     return;
   }
-  if (!isValidPhoneAny(formData.customerPhone)) {
-    toast.error('Broj telefona nije ispravan. Prihvatamo BiH (+387/06x) i HR (+385/09x) formate.');
+  if (!isValidPhoneForCountry(formData.customerPhone, selectedCountryCode)) {
+    const country = COUNTRIES.find(c => c.code === selectedCountryCode);
+    toast.error(`Broj telefona nije ispravan za ${country?.name || 'odabranu državu'}. Format: ${country?.format || ''}`);
     return;
   }
   setShowConfirmModal(true);
@@ -186,8 +210,9 @@ const handleSubmit = async (e) => {
     toast.error('Unesite email adresu.');
     return;
   }
-  if (!isValidPhoneAny(formData.customerPhone)) {
-    toast.error('Broj telefona nije ispravan. Prihvatamo BiH (+387/06x) i HR (+385/09x) formate.');
+  if (!isValidPhoneForCountry(formData.customerPhone, selectedCountryCode)) {
+    const country = COUNTRIES.find(c => c.code === selectedCountryCode);
+    toast.error(`Broj telefona nije ispravan za ${country?.name || 'odabranu državu'}. Format: ${country?.format || ''}`);
     return;
   }
 
@@ -398,17 +423,19 @@ const handleSubmit = async (e) => {
                       setTimeout(() => scrollToSection(timeSlotsSectionRef), 100);
                     }}
                   >
-                    {service.image && (
-                      <div className="service-card-image">
-                        <img src={service.image} alt={service.name} />
-                      </div>
-                    )}
                     <div className="service-card-content">
                       <h4>{service.name}</h4>
-                      <p className="service-card-duration">{service.duration} min</p>
                       <p className="service-card-price">{service.price} KM</p>
+                      <p className="service-card-duration">{service.duration} min</p>
                       {service.description && (
                         <p className="service-card-desc">{service.description}</p>
+                      )}
+                    </div>
+                    <div className="service-card-image">
+                      {service.image ? (
+                        <img src={service.image} alt={service.name} loading="lazy" />
+                      ) : (
+                        <div className="service-card-placeholder"></div>
                       )}
                     </div>
                   </div>
@@ -434,7 +461,7 @@ const handleSubmit = async (e) => {
         {availableSlots.map(slot => {
           const slotTime = typeof slot === 'string' ? slot : slot.time;
           const slotStatus = typeof slot === 'string' ? 'available' : slot.status;
-          const isDisabled = slotStatus === 'booked' || slotStatus === 'past';
+          const isDisabled = slotStatus === 'booked' || slotStatus === 'past' || slotStatus === 'break';
           
           return (
             <button 
@@ -452,6 +479,7 @@ const handleSubmit = async (e) => {
             >
               {slotTime}
               {slotStatus === 'booked' && <span className="slot-indicator">Zauzeto</span>}
+              {slotStatus === 'break' && <span className="slot-indicator">Pauza</span>}
             </button>
           );
         })}
@@ -473,20 +501,33 @@ const handleSubmit = async (e) => {
               />
               <input
                 type="email"
-                placeholder="Email adresa *"
+                placeholder="Email *"
                 value={formData.customerEmail}
                 onChange={(e) => setFormData({...formData, customerEmail: e.target.value})}
                 required
                 className="form-input"
               />
-              <input
-                type="tel"
-                placeholder="Broj telefona *"
-                value={formData.customerPhone}
-                onChange={(e) => setFormData({...formData, customerPhone: e.target.value})}
-                required
-                className="form-input"
-              />
+              <div className="phone-input-wrapper">
+                <select
+                  value={selectedCountryCode}
+                  onChange={(e) => setSelectedCountryCode(e.target.value)}
+                  className="country-select"
+                >
+                  {COUNTRIES.map(country => (
+                    <option key={country.code} value={country.code}>
+                      {country.flag} {country.dialCode}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="tel"
+                  placeholder="Broj telefona *"
+                  value={formData.customerPhone}
+                  onChange={(e) => setFormData({...formData, customerPhone: e.target.value})}
+                  required
+                  className="form-input phone-input"
+                />
+              </div>
             </div>
             <textarea
               placeholder="Dodatne napomene (opcionalno)"
@@ -550,12 +591,25 @@ const handleSubmit = async (e) => {
                 </div>
                 <div className="confirm-field">
                   <label>Telefon</label>
-                  <input
-                    type="tel"
-                    value={formData.customerPhone}
-                    onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                    placeholder="+3876xxxxxxx ili 06xxxxxxx / +3859xxxxxxxx ili 09xxxxxxxx"
-                  />
+                  <div className="phone-input-wrapper">
+                    <select
+                      value={selectedCountryCode}
+                      onChange={(e) => setSelectedCountryCode(e.target.value)}
+                      className="country-select"
+                    >
+                      {COUNTRIES.map(country => (
+                        <option key={country.code} value={country.code}>
+                          {country.flag} {country.dialCode}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      value={formData.customerPhone}
+                      onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                      placeholder="Broj telefona"
+                    />
+                  </div>
                 </div>
                 <div className="confirm-field full">
                   <label>Napomene (opcionalno)</label>

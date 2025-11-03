@@ -57,12 +57,14 @@ router.get('/', async (req, res) => {
     const settings = await Settings.getSettings();
     const breakSlots = settings.breakSlots || [];
     
-    // Filtriraj break slots
+    // Filtriraj break slots - generišemo termine, ali NE uključujemo end vrijeme
     const breakTimes = [];
     breakSlots.forEach(breakSlot => {
       const breakSlotTimes = generateTimeSlots(breakSlot.startTime, breakSlot.endTime, 30);
       breakTimes.push(...breakSlotTimes);
     });
+    
+    console.log(`☕ Break slotovi:`, breakTimes);
     
     // ⭐⭐ ISPRAVNO: Pronađi ZAUZETE termine za TAJ DAN u UTC ⭐⭐
     // Pripremi ISO granice za upit (DB pohranjuje u UTC)

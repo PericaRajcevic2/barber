@@ -87,4 +87,9 @@ const appointmentSchema = new mongoose.Schema({
   }
 });
 
+// Indexes to speed up common queries
+appointmentSchema.index({ date: 1 });
+appointmentSchema.index({ status: 1, date: 1 });
+appointmentSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Appointment', appointmentSchema);

@@ -9,8 +9,18 @@ import CancelAppointment from './components/CancelAppointment.jsx'
 import './index.css'
 import './utils/offlineQueue.js'
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
+// Unregister Service Worker in development to avoid caching issues
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => {
+      registration.unregister();
+      console.log('🗑️ Service Worker unregistered in dev mode');
+    });
+  });
+}
+
+// Register Service Worker for PWA (only in production to avoid dev cache issues)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then((registration) => {

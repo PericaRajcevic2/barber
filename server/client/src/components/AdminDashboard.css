@@ -143,15 +143,25 @@
   display: flex;
   overflow-x: auto;
   gap: 8px;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .admin-nav-content::-webkit-scrollbar {
-  height: 4px;
+  height: 6px;
+}
+
+.admin-nav-content::-webkit-scrollbar-track {
+  background: #f0f1f5;
 }
 
 .admin-nav-content::-webkit-scrollbar-thumb {
   background: #7B68EE;
   border-radius: 4px;
+}
+
+.admin-nav-content::-webkit-scrollbar-thumb:hover {
+  background: #6a57dd;
 }
 
 .nav-tab {
@@ -166,6 +176,10 @@
   transition: all 0.3s;
   white-space: nowrap;
   position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: none;
+  min-width: fit-content;
 }
 
 .nav-tab:hover {
@@ -194,41 +208,174 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+
+/* Extra small phones (320px - 480px) */
+@media (max-width: 480px) {
+  .admin-header {
+    padding: 10px 0;
+  }
+
   .admin-header-content {
-    flex-direction: column;
-    text-align: center;
-    padding: 0 20px;
+    padding: 0 12px;
+    gap: 10px;
   }
 
   .admin-header h1 {
-    font-size: 1.4rem;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .admin-header h1::before {
+    font-size: 1.1rem;
   }
 
   .admin-user {
+    gap: 8px;
+  }
+
+  .admin-user span {
+    font-size: 0.8rem;
+  }
+
+  .notification-badge {
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+
+  .btn-logout {
+    padding: 7px 16px;
+    font-size: 0.8rem;
+  }
+
+  .admin-nav-content {
+    padding: 6px 12px;
+     gap: 8px;
+  }
+
+  .nav-tab {
+     padding: 10px 16px;
+     font-size: 0.72rem;
+    color: #2c3e50;
+    font-weight: 600;
+    overflow: visible;
+    text-overflow: clip;
+     white-space: nowrap;
+     flex-shrink: 0;
+  }
+
+  .nav-tab.active {
+    color: #7B68EE;
+    font-weight: 700;
+  }
+
+  .admin-main {
+    padding: 12px;
+  }
+
+  .floating-back-button {
+    bottom: 16px;
+    left: 16px;
+    width: 46px;
+    height: 46px;
+  }
+  
+  .floating-back-button svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Standard mobile phones (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .admin-header {
+    padding: 12px 0;
+  }
+
+  .admin-header-content {
     flex-direction: column;
+    align-items: flex-start;
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.15rem;
+    line-height: 1.4;
+    word-break: break-word;
+    width: 100%;
+  }
+
+  .admin-header h1::before {
+    font-size: 1.3rem;
+  }
+
+  .admin-user {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 10px;
+    width: 100%;
+  }
+
+  .admin-user span {
+    font-size: 0.85rem;
+  }
+
+  .btn-logout {
+    padding: 8px 18px;
+    font-size: 0.85rem;
+  }
+
+  .admin-nav {
+    position: sticky;
+    top: 0;
+    z-index: 999;
   }
 
   .admin-nav-content {
     flex-wrap: nowrap;
-    padding: 0 20px;
+    padding: 8px 16px;
+      gap: 8px;
+    scrollbar-width: thin;
+  }
+
+  .admin-nav-content::-webkit-scrollbar {
+    height: 4px;
   }
 
   .nav-tab {
-    padding: 14px 18px;
-    font-size: 0.85rem;
+    padding: 12px 16px;
+    font-size: 0.8rem;
+    min-width: auto;
+    flex-shrink: 0;
+    border-radius: 8px;
+    color: #2c3e50;
+    font-weight: 600;
+    overflow: visible;
+    text-overflow: clip;
+      white-space: nowrap;
+  }
+
+  .nav-tab.active {
+    border-bottom: 3px solid #7B68EE;
+    color: #7B68EE;
+    font-weight: 700;
   }
 
   .admin-main {
-    padding: 20px 16px;
+    padding: 16px;
+  }
+
+  .admin-main-content {
+    border-radius: 12px;
+    overflow: hidden;
   }
 
   .floating-back-button {
     bottom: 20px;
     left: 20px;
-    width: 52px;
-    height: 52px;
+    width: 50px;
+    height: 50px;
   }
   
   .floating-back-button svg {
@@ -238,18 +385,16 @@
 }
 
 /* ========================================
-   TABLET LAYOUT (641px - 1024px)
+   TABLET LAYOUT (769px - 1024px)
    Hybrid desktop/mobile design
    ======================================== */
-@media (min-width: 641px) and (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1024px) {
   .admin-dashboard {
-    display: grid;
-    grid-template-rows: auto auto 1fr;
     min-height: 100vh;
   }
 
   .admin-header {
-    padding: 16px 0;
+    padding: 14px 0;
   }
 
   .admin-header-content {
@@ -259,32 +404,46 @@
   }
 
   .admin-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+  }
+
+  .admin-header h1::before {
+    font-size: 1.6rem;
   }
 
   .admin-user {
-    flex-direction: row;
+    flex-wrap: wrap;
     gap: 12px;
   }
 
-  /* Tablet Navigation - Horizontal scrollable cards */
-  .admin-navigation {
+  .admin-user span {
+    font-size: 0.9rem;
+  }
+
+  .btn-logout {
+    padding: 9px 18px;
+    font-size: 0.9rem;
+  }
+
+  /* Tablet Navigation - Sticky horizontal scroll */
+  .admin-nav {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 998;
     background: white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
 
   .admin-nav-content {
     max-width: 100%;
-    padding: 0 24px;
+    padding: 8px 24px;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+    scrollbar-color: #7B68EE #f0f1f5;
+    gap: 8px;
   }
 
   .admin-nav-content::-webkit-scrollbar {
@@ -292,133 +451,130 @@
   }
 
   .admin-nav-content::-webkit-scrollbar-track {
-    background: transparent;
+    background: #f0f1f5;
   }
 
   .admin-nav-content::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #7B68EE;
     border-radius: 3px;
   }
 
+  .admin-nav-content::-webkit-scrollbar-thumb:hover {
+    background: #6a57dd;
+  }
+
   .nav-tab {
-    padding: 16px 20px;
-    font-size: 0.9rem;
+    padding: 14px 20px;
+    font-size: 0.88rem;
     white-space: nowrap;
     min-width: fit-content;
+    flex-shrink: 0;
+    border-radius: 8px;
   }
 
-  /* Tablet Main Content - Two column where appropriate */
+  /* Tablet Main Content */
   .admin-main {
-    padding: 24px;
+    padding: 20px 24px;
     max-width: 100%;
-    overflow-y: auto;
   }
 
-  /* Grid layouts for management components */
-  .management-container .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-  }
-
-  /* Calendar view - side by side on tablet */
-  .calendar-view-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-
-  /* Statistics cards - 2 column layout */
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+  .admin-main-content {
+    border-radius: 14px;
   }
 
   /* Floating back button - tablet position */
   .floating-back-button {
     bottom: 24px;
     left: 24px;
-    width: 56px;
-    height: 56px;
+    width: 54px;
+    height: 54px;
+  }
+
+  .floating-back-button svg {
+    width: 26px;
+    height: 26px;
   }
 
   /* Touch-friendly spacing */
-  button, .btn-primary, .btn-secondary, .btn-delete {
-    min-height: 44px;
-    padding: 10px 20px;
+  button:not(.floating-back-button), .btn-primary, .btn-secondary, .btn-delete {
+    min-height: 42px;
+    padding: 10px 18px;
   }
 
   /* Form inputs - comfortable touch targets */
   input, select, textarea {
-    min-height: 44px;
+    min-height: 42px;
     font-size: 16px; /* Prevents zoom on iOS */
-  }
-
-  /* Modal dialogs - centered with margin */
-  .modal-content {
-    max-width: 90%;
-    margin: 5vh auto;
-  }
-
-  /* Appointment cards - comfortable spacing */
-  .appointment-card {
-    padding: 18px;
-  }
-
-  /* Reviews layout - 2 columns */
-  .reviews-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Tablet landscape optimization (landscape tablets) */
-@media (min-width: 641px) and (max-width: 1024px) and (orientation: landscape) {
+/* Tablet landscape optimization */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
   .admin-header-content {
     padding: 0 32px;
   }
 
+  .admin-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .admin-nav-content {
+    padding: 8px 32px;
+  }
+
+  .nav-tab {
+    padding: 14px 22px;
+    font-size: 0.92rem;
+  }
+
   .admin-main {
     padding: 24px 32px;
-  }
-
-  /* 3 column layout for landscape */
-  .management-container .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  /* Side panel layouts */
-  .dashboard-layout {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
   }
 }
 
 /* Touch device optimizations (all mobile and tablet) */
 @media (hover: none) and (pointer: coarse) {
   /* Larger tap targets */
-  button, a, .clickable {
+  button:not(.floating-back-button), 
+  a, 
+  .clickable,
+  .nav-tab {
     min-height: 44px;
     min-width: 44px;
   }
 
   /* Better touch feedback */
-  button:active, .btn-primary:active, .btn-secondary:active {
-    transform: scale(0.97);
-    opacity: 0.8;
+  button:active, 
+  .btn-primary:active, 
+  .btn-secondary:active,
+  .nav-tab:active {
+    transform: scale(0.98);
+    opacity: 0.85;
+    transition: transform 0.1s ease, opacity 0.1s ease;
   }
 
   /* Prevent text selection on UI elements */
-  .nav-tab, .calendar-day, .appointment-card-header {
+  .nav-tab, 
+  .admin-header h1,
+  button {
     -webkit-user-select: none;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Smoother scrolling */
-  * {
+  .admin-nav-content,
+  .admin-main {
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Remove hover effects on touch devices */
+  .nav-tab:hover {
+    background: none;
+  }
+
+  .nav-tab.active:hover {
+    background: rgba(123, 104, 238, 0.08);
   }
 }
 
@@ -429,12 +585,64 @@
   }
 
   .floating-back-button {
-    bottom: max(20px, env(safe-area-inset-bottom));
-    left: max(20px, env(safe-area-inset-left));
+    bottom: max(20px, calc(env(safe-area-inset-bottom) + 10px));
+    left: max(20px, calc(env(safe-area-inset-left) + 10px));
   }
 
   /* Add safe area padding for notched devices */
   .admin-main {
-    padding-bottom: max(24px, env(safe-area-inset-bottom));
+    padding-left: max(30px, calc(env(safe-area-inset-left) + 20px));
+    padding-right: max(30px, calc(env(safe-area-inset-right) + 20px));
+    padding-bottom: max(30px, calc(env(safe-area-inset-bottom) + 20px));
+  }
+
+  .admin-nav-content {
+    padding-left: max(30px, calc(env(safe-area-inset-left) + 20px));
+    padding-right: max(30px, calc(env(safe-area-inset-right) + 20px));
+  }
+}
+
+/* Small landscape phones (height-constrained) */
+@media (max-height: 500px) and (orientation: landscape) {
+  .admin-header {
+    padding: 8px 0;
+  }
+
+  .admin-header h1 {
+    font-size: 1rem;
+  }
+
+  .admin-header h1::before {
+    font-size: 1.1rem;
+  }
+
+  .admin-user {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .admin-nav-content {
+    padding: 6px 16px;
+  }
+
+  .nav-tab {
+    padding: 8px 14px;
+    font-size: 0.75rem;
+  }
+
+  .admin-main {
+    padding: 12px 16px;
+  }
+
+  .floating-back-button {
+    width: 42px;
+    height: 42px;
+    bottom: 12px;
+    left: 12px;
+  }
+
+  .floating-back-button svg {
+    width: 18px;
+    height: 18px;
   }
 }

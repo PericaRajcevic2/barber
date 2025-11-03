@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import AppointmentsManagement from './AppointmentsManagement';
 import CalendarView from './CalendarView';
@@ -18,6 +18,7 @@ const AdminDashboard = ({ user, onLogout }) => {
   const [newAppointments, setNewAppointments] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [socket, setSocket] = useState(null);
+  const navRef = useRef(null);
 
   // Funkcija za promjenu taba koja pamti historiju
   const handleTabChange = (tabId) => {
@@ -110,6 +111,26 @@ const AdminDashboard = ({ user, onLogout }) => {
     fetchUnread();
   }, []);
 
+  // Enable horizontal scroll on navigation with mouse wheel
+  useEffect(() => {
+    const navElement = navRef.current;
+    if (!navElement) return;
+
+    const handleWheel = (e) => {
+      // Only prevent default and scroll if there's actual overflow
+      const hasOverflow = navElement.scrollWidth > navElement.clientWidth;
+      if (hasOverflow) {
+        e.preventDefault();
+        navElement.scrollLeft += e.deltaY;
+      }
+    };
+
+    navElement.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      navElement.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
   const tabs = [
     { id: 'statistics', label: '📈 Statistika', component: StatisticsDashboard },
     { id: 'calendar', label: '🗓️ Kalendar', component: CalendarView },
@@ -164,7 +185,7 @@ const AdminDashboard = ({ user, onLogout }) => {
       </header>
 
       <nav className="admin-nav">
-        <div className="admin-nav-content">
+        <div className="admin-nav-content" ref={navRef}>
           {tabs.map(tab => (
             <button
               key={tab.id}
